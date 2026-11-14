@@ -179,7 +179,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 60fa930b8f3ef3a40ba43f3201cc918d, type: 3}
+  m_Texture: {fileID: 2800000, guid: c50cf53deda4a444791ad8c26d6f135b, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -430,7 +430,7 @@ MonoBehaviour:
   prefab2: 0
   count: {fileID: 0}
   countOut: {fileID: 0}
-  Pause: {fileID: 0}
+  pause: {fileID: 0}
   next: {fileID: 0}
   options: {fileID: 1518948668}
   menu: {fileID: 1662025903}
@@ -1136,7 +1136,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 60fa930b8f3ef3a40ba43f3201cc918d, type: 3}
+  m_Texture: {fileID: 2800000, guid: c50cf53deda4a444791ad8c26d6f135b, type: 3}
   m_UVRect:
     serializedVersion: 2
     x: 0

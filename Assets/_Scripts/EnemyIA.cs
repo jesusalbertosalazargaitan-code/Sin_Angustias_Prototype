@@ -9,19 +9,20 @@ public class EnemyIA : MonoBehaviour
     // Variables configurables
     
     public float visionRate = 10f; // Distancia a la que te ve
-    public float roadRate = 30f; // QuÈ tan lejos puede ir al deambular
+    public float roadRate = 30f; // Qu√© tan lejos puede ir al deambular
     public float tiempoDeEspera = 3f;  // Tiempo que espera en cada punto al deambular
     public float run = 3f; // Velocidad al perseguir
     public float walk = 1.5f; // Velocidad al deambular
     private float cronometro; // Para contar el tiempo de espera al deambular
     private GameManager gameManager; // Referencia al GameManager para verificar el puntaje
-    public Transform jugador; // Arrastra aquÌ al Player
+    public Transform jugador; // Arrastra aqu√≠ al Player
     Animator anim; // Referencia al Animator para controlar las animaciones
     private NavMeshAgent agente; // Componentes y estado interno
-    private PlayerController playerController; // Referencia al PlayerController para verificar si el jugador est· en la zona segura
-    private bool jugadorEnVista; // Si el jugador est· dentro del radio de visiÛn
-    public bool walkUp = false; // Si el enemigo est· caminando erguido (despuÈs de recoger 3 objetos)
-    bool GameOver = false; // Si el juego ha terminado (para evitar que la IA siga actuando despuÈs de ganar o perder)
+    private PlayerController playerController; // Referencia al PlayerController para verificar si el jugador est√° en la zona segura
+    private bool jugadorEnVista; // Si el jugador est√° dentro del radio de visi√≥n
+    public bool walkUp = false; // Si el enemigo est√° caminando erguido (despu√©s de recoger 3 objetos)
+    bool GameOver = false; // Si el juego ha terminado (para evitar que la IA siga actuando despu√©s de ganar o perder)
+    private bool transformado = false; // Bandera para que la transformaci√≥n de score 3 solo se ejecute una √∫nica vez
     void Start()
     {
         // Obtener referencias a componentes y objetos necesarios
@@ -32,51 +33,52 @@ public class EnemyIA : MonoBehaviour
         jugador = GameObject.Find("Player").transform;
         // Empezamos deambulando a un punto aleatorio
         SetNuevoPuntoAleatorio();
-        // Iniciar la corrutina para cambiar a caminar erguido despuÈs de 30 segundos
+        // Iniciar la corrutina para cambiar a caminar erguido despu√©s de 30 segundos
         StartCoroutine(StateAnim());
     }
 
     void Update()
     {
-        // DetecciÛn: øEl jugador est· cerca?
+        // Detecci√≥n: ¬øEl jugador est√° cerca?
         float distanciaAlJugador = Vector3.Distance(transform.position, jugador.position);
-        // El jugador est· en vista si est· dentro del radio de visiÛn y el juego no ha terminado
+        // El jugador est√° en vista si est√° dentro del radio de visi√≥n y el juego no ha terminado
         if (distanciaAlJugador <= visionRate && GameOver == false)
         {
-            jugadorEnVista = true; // El jugador est· dentro del radio de visiÛn
+            jugadorEnVista = true; // El jugador est√° dentro del radio de visi√≥n
         }
         else
         {
-            jugadorEnVista = false; // El jugador est· fuera del radio de visiÛn o el juego ha terminado
+            jugadorEnVista = false; // El jugador est√° fuera del radio de visi√≥n o el juego ha terminado
         }
-        // Comportamiento: Si el jugador est· en vista y no est· en la zona segura, perseguirlo. Si no, deambular.
+        // Comportamiento: Si el jugador est√° en vista y no est√° en la zona segura, perseguirlo. Si no, deambular.
         if (jugadorEnVista && PuedoVerAlJugador() && !playerController.safeZone && GameOver == false)
         {
             PerseguirJugador();
         }
         else
         {
-            DeambularAletorio();// Si el jugador no est· en vista o est· en la zona segura, deambular
+            DeambularAletorio();// Si el jugador no est√° en vista o est√° en la zona segura, deambular
         }
         // Cambios de estado basados en el puntaje del jugador
-        if (gameManager.objectScore == 3 && GameOver == false)
+        if (gameManager != null && gameManager.objectScore == 3 && GameOver == false && !transformado)
         {
-            walkUp = true; // El enemigo empieza a caminar erguido despuÈs de recoger 3 objetos
-            anim.SetBool("Up", true); // Activa la animaciÛn de caminar erguido
-            anim.SetBool("Walk", true); // Activa la animaciÛn de caminar
-            run = 5f; // Aumenta la velocidad al perseguir despuÈs de recoger 3 objetos
-            walk = 3f; // Aumenta la velocidad al deambular despuÈs de recoger 3 objetos
-            roadRate = 15f; // Aumenta el radio de deambulaciÛn despuÈs de recoger 3 objetos
-            visionRate = 20f; // Aumenta el radio de visiÛn despuÈs de recoger 3 objetos
-            StartCoroutine(StateStop()); // Inicia la corrutina para volver a caminar normal despuÈs de 7.5 segundos
+            transformado = true;
+            walkUp = true; // El enemigo empieza a caminar erguido despu√©s de recoger 3 objetos
+            anim.SetBool("Up", true); // Activa la animaci√≥n de caminar erguido
+            anim.SetBool("Walk", true); // Activa la animaci√≥n de caminar
+            run = 5f; // Aumenta la velocidad al perseguir despu√©s de recoger 3 objetos
+            walk = 3f; // Aumenta la velocidad al deambular despu√©s de recoger 3 objetos
+            roadRate = 15f; // Aumenta el radio de deambulaci√≥n despu√©s de recoger 3 objetos
+            visionRate = 20f; // Aumenta el radio de visi√≥n despu√©s de recoger 3 objetos
+            StartCoroutine(StateStop()); // Inicia la corrutina para volver a caminar normal despu√©s de 7.5 segundos
         }
-        // Si el jugador ha recogido 6 objetos, el enemigo se vuelve a˙n m·s r·pido y agresivo
-        if (gameManager.objectScore == 6)
+        // Si el jugador ha recogido 3 objetos, el enemigo se vuelve a√∫n m√°s r√°pido y agresivo
+        if (gameManager.objectScore == 3)
         {
-            run = 6f; // Velocidad m·xima al perseguir despuÈs de recoger 6 objetos
-            walk = 5f; // Velocidad m·xima al deambular despuÈs de recoger 6 objetos
-            roadRate = 30f; // Radio de deambulaciÛn m·ximo despuÈs de recoger 6 objetos
-            visionRate = 40f; // Radio de visiÛn m·ximo despuÈs de recoger 6 objetos
+            run = 6f; // Velocidad m√°xima al perseguir despu√©s de recoger 6 objetos
+            walk = 5f; // Velocidad m√°xima al deambular despu√©s de recoger 6 objetos
+            roadRate = 30f; // Radio de deambulaci√≥n m√°ximo despu√©s de recoger 6 objetos
+            visionRate = 40f; // Radio de visi√≥n m√°ximo despu√©s de recoger 6 objetos
         }
         if (walkUp == true)
         {
@@ -84,23 +86,23 @@ public class EnemyIA : MonoBehaviour
             agente.ResetPath();
         }
     }
-    // FunciÛn para perseguir al jugador
+    // Funci√≥n para perseguir al jugador
     void PerseguirJugador() 
     {
-        // Si el jugador est· en vista y el juego no ha terminado, perseguirlo
+        // Si el jugador est√° en vista y el juego no ha terminado, perseguirlo
         if (walkUp == false && GameOver == false)
         {
             // El NavMesh Agent se encarga de ir hacia el jugador sin chocarse
             agente.SetDestination(jugador.position);
             agente.speed = run; // Opcional: Aumentar velocidad al perseguir
-            anim.SetFloat("Runing", 1); // Activa la animaciÛn de correr estableciendo el par·metro "Runing" en el Animator a 1
+            anim.SetFloat("Runing", 1); // Activa la animaci√≥n de correr estableciendo el par√°metro "Runing" en el Animator a 1
         }
     }
-    // Si el jugador no est· en vista o est· en la zona segura, deambular
+    // Si el jugador no est√° en vista o est√° en la zona segura, deambular
     void DeambularAletorio() 
     {
         agente.speed = walk; // Volver a velocidad normal
-        anim.SetFloat("Runing", 0); // Desactiva la animaciÛn de correr estableciendo el par·metro "Runing" en el Animator a 0
+        anim.SetFloat("Runing", 0); // Desactiva la animaci√≥n de correr estableciendo el par√°metro "Runing" en el Animator a 0
 
         // Si el agente no tiene un camino pendiente y ha llegado a su destino, elegir un nuevo punto aleatorio para deambular
         if (!agente.pathPending && agente.remainingDistance <= agente.stoppingDistance && walkUp == false)
@@ -112,22 +114,22 @@ public class EnemyIA : MonoBehaviour
             {
                 // Elegir un nuevo punto aleatorio para deambular
                 SetNuevoPuntoAleatorio();
-                // Reiniciar el cronÛmetro para la prÛxima espera
+                // Reiniciar el cron√≥metro para la pr√≥xima espera
                 cronometro = 0;
             }
         }
     }
 
-    // FunciÛn auxiliar para calcular un punto aleatorio en el NavMesh
+    // Funci√≥n auxiliar para calcular un punto aleatorio en el NavMesh
     void SetNuevoPuntoAleatorio()
     {
-        // Creamos un cÌrculo imaginario alrededor de la IA
+        // Creamos un c√≠rculo imaginario alrededor de la IA
         Vector3 puntoAleatorio = Random.insideUnitSphere * roadRate;
-        // Lo movemos a la posiciÛn de la IA para que el cÌrculo estÈ centrado en ella
+        // Lo movemos a la posici√≥n de la IA para que el c√≠rculo est√© centrado en ella
         puntoAleatorio += transform.position;
-        // Creamos una variable para almacenar la informaciÛn del punto m·s cercano en el NavMesh
+        // Creamos una variable para almacenar la informaci√≥n del punto m√°s cercano en el NavMesh
         NavMeshHit hit;
-        // Si encontramos un punto v·lido en el NavMesh dentro del radio de deambulaciÛn y el juego no ha terminado, establecemos ese punto como destino para el agente
+        // Si encontramos un punto v√°lido en el NavMesh dentro del radio de deambulaci√≥n y el juego no ha terminado, establecemos ese punto como destino para el agente
         if (NavMesh.SamplePosition(puntoAleatorio, out hit, roadRate, 1) && !GameOver) 
         {
             // El NavMesh Agent se encarga de ir hacia el punto aleatorio sin chocarse
@@ -137,11 +139,11 @@ public class EnemyIA : MonoBehaviour
     }
     bool PuedoVerAlJugador()
     {
-        // 1. Calcular direcciÛn y distancia hacia el jugador
+        // 1. Calcular direcci√≥n y distancia hacia el jugador
         Vector3 direccionAlJugador = (jugador.position - transform.position).normalized;
         float distanciaAlJugador = Vector3.Distance(transform.position, jugador.position);
 
-        // 2. Verificar si est· dentro del rango de visiÛn
+        // 2. Verificar si est√° dentro del rango de visi√≥n
         if (distanciaAlJugador <= visionRate)
         {
             // 3. Lanzar un Raycast desde el enemigo hacia el jugador
@@ -154,24 +156,24 @@ public class EnemyIA : MonoBehaviour
                 // Comprobar si lo primero que impacta el Raycast es el jugador
                 if (hit.transform == jugador || hit.transform.CompareTag("Player"))
                 {
-                    return true; // El enemigo ve al jugador sin obst·culos
+                    return true; // El enemigo ve al jugador sin obst√°culos
                 }
             }
         }
 
-        return false; // El jugador est· fuera de rango o cubierto tras un obst·culo
+        return false; // El jugador est√° fuera de rango o cubierto tras un obst√°culo
     }
-    // Para ver el radio de visiÛn en escena
+    // Para ver el radio de visi√≥n en escena
     void OnDrawGizmosSelected()
     {
-        // Dibujamos un cÌrculo rojo para el radio de visiÛn y un cÌrculo azul para el radio de deambulaciÛn
+        // Dibujamos un c√≠rculo rojo para el radio de visi√≥n y un c√≠rculo azul para el radio de deambulaci√≥n
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, visionRate);
 
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, roadRate);
 
-        // Dibujar lÌnea del Raycast hacia el jugador en tiempo de ejecuciÛn (si existe)
+        // Dibujar l√≠nea del Raycast hacia el jugador en tiempo de ejecuci√≥n (si existe)
         if (jugador != null)
         {
             Vector3 origenOjos = transform.position + Vector3.up * 30f;
@@ -180,36 +182,36 @@ public class EnemyIA : MonoBehaviour
         }
 
     }  
-    IEnumerator StateAnim() // Cambia a caminar erguido despuÈs de 30 segundos
+    IEnumerator StateAnim() // Cambia a caminar erguido despu√©s de 30 segundos
     {
         yield return new WaitForSeconds(30f); // Espera 30 segundos antes de cambiar a caminar erguido
-        anim.SetBool("Up", true); // Activa la animaciÛn de caminar erguido
-        anim.SetBool("Walk", true); // Activa la animaciÛn de caminar
-        walkUp = true; // El enemigo empieza a caminar erguido despuÈs de 30 segundos
-        StartCoroutine(StateStop()); // Inicia la corrutina para volver a caminar normal despuÈs de 7.5 segundos
+        anim.SetBool("Up", true); // Activa la animaci√≥n de caminar erguido
+        anim.SetBool("Walk", true); // Activa la animaci√≥n de caminar
+        walkUp = true; // El enemigo empieza a caminar erguido despu√©s de 30 segundos
+        StartCoroutine(StateStop()); // Inicia la corrutina para volver a caminar normal despu√©s de 7.5 segundos
     }
-    // Vuelve a caminar normal despuÈs de 7.5 segundos
+    // Vuelve a caminar normal despu√©s de 7.5 segundos
     IEnumerator StateStop() 
     {
         yield return new WaitForSeconds(7.5f); // Espera 7.5 segundos antes de volver a caminar normal
-        walkUp = false; // El enemigo deja de caminar erguido despuÈs de 7.5 segundos
+        walkUp = false; // El enemigo deja de caminar erguido despu√©s de 7.5 segundos
     }
-    // Detecta colisiones con el jugador para activar la animaciÛn de muerte y la secuencia de Game Over
+    // Detecta colisiones con el jugador para activar la animaci√≥n de muerte y la secuencia de Game Over
     public void OnCollisionEnter(Collision collision) 
     {
-        // Si colisiona con el jugador y el juego no ha terminado, se activa la animaciÛn de muerte y se inicia la secuencia de Game Over
+        // Si colisiona con el jugador y el juego no ha terminado, se activa la animaci√≥n de muerte y se inicia la secuencia de Game Over
         if (collision.gameObject.CompareTag("Player") && GameOver == false) 
         {
-            anim.SetBool("Dead", true); // Activa la animaciÛn de muerte estableciendo el par·metro "Dead" en el Animator a true
-            GameOver = true; // El juego ha terminado, asÌ que establecemos GameOver a true para evitar que la IA siga actuando
+            anim.SetBool("Dead", true); // Activa la animaci√≥n de muerte estableciendo el par√°metro "Dead" en el Animator a true
+            GameOver = true; // El juego ha terminado, as√≠ que establecemos GameOver a true para evitar que la IA siga actuando
             StartCoroutine(DeadTime()); // Inicia la corrutina para esperar 10 segundos antes de cargar la escena de Game Over
         }
     }
-    // Espera 10 segundos despuÈs de la muerte para cargar la escena de Game Over
+    // Espera 10 segundos despu√©s de la muerte para cargar la escena de Game Over
     IEnumerator DeadTime() 
     {
         yield return new WaitForSeconds(10f);
-        SceneManager.LoadScene(1); // Carga la escena de Game Over (aseg˙rate de que la escena de Game Over estÈ en el Ìndice 1 en la configuraciÛn de escenas)
+        SceneManager.LoadScene(1); // Carga la escena de Game Over (aseg√∫rate de que la escena de Game Over est√© en el √≠ndice 1 en la configuraci√≥n de escenas)
     }
 }
 

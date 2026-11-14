@@ -16,7 +16,7 @@ public class ElementsMove : MonoBehaviour
     {
         startPosition = transform.position; //Guarda la posición inicial del objeto
 
-        if (transform.position.x <= 4.69f && gameManager.objectScore == 6) //Si el objeto está en la posición de la puerta y se han recogido los 6 objetos, se mueve hacia adelante
+        if (transform.position.x <= 4.69f && gameManager.objectScore == 3) //Si el objeto está en la posición de la puerta y se han recogido los 3 objetos, se mueve hacia adelante
         {
             transform.Translate(Vector3.forward * 0.5f * Time.deltaTime); // Mueve el objeto hacia adelante a una velocidad de 0.5 unidades por segundo
         }

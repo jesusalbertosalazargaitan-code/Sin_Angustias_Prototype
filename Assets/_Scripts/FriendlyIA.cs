@@ -1,20 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Advertisements;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class FriendlyIA : MonoBehaviour
 {
     private NavMeshAgent agent;
-    public float tiempodeEspera = 60f; // Tiempo que el NPC esperará en cada punto de interés antes de moverse al siguiente
+    public float tiempodeEspera = 60f; // Tiempo que el NPC esperarï¿½ en cada punto de interï¿½s antes de moverse al siguiente
     public float timer = 0f; 
     public float speed = 10f;
     public float visionRate;
     public float wanderRate;
-    public Vector3[] wayPoints; // Array de puntos de interés para que el NPC se mueva entre ellos
-    public int arrayVector = 0; // Variable para llevar la cuenta del índice actual en el array de puntos de interés
-    public bool advance = false; // Variable para controlar si el NPC debe avanzar hacia el siguiente punto de interés
+    public Vector3[] wayPoints; // Array de puntos de interï¿½s para que el NPC se mueva entre ellos
+    public int arrayVector = 0; // Variable para llevar la cuenta del ï¿½ndice actual en el array de puntos de interï¿½s
+    public bool advance = false; // Variable para controlar si el NPC debe avanzar hacia el siguiente punto de interï¿½s
     public bool tipPlayer = false; // Variable para controlar si el NPC ha dado la pista al jugador
     public int hitCount;
     void Start()
@@ -28,7 +27,7 @@ public class FriendlyIA : MonoBehaviour
         agent.speed = speed;
         if(advance == true)
         {
-            timer += Time.deltaTime; // Si el agente ha llegado a su destino, puedes realizar alguna acción adicional aquí si lo deseas
+            timer += Time.deltaTime; // Si el agente ha llegado a su destino, puedes realizar alguna acciï¿½n adicional aquï¿½ si lo deseas
             MoveToPoint();
         }else advance = false;
 
@@ -41,17 +40,17 @@ public class FriendlyIA : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            advance = true; // Si el NPC colisiona con el jugador, se activa la variable advance para que el NPC comience a avanzar hacia el siguiente punto de interés
+            advance = true; // Si el NPC colisiona con el jugador, se activa la variable advance para que el NPC comience a avanzar hacia el siguiente punto de interï¿½s
             if (tipPlayer == false)
             {
-                arrayVector++; // Incrementa el índice del array de puntos de interés para que el NPC se dirija al siguiente punto en la próxima actualización
-                tipPlayer = true; // Reinicia la variable tipPlayer para que el NPC no dé la pista nuevamente hasta que vuelva a colisionar con el jugador
+                arrayVector++; // Incrementa el ï¿½ndice del array de puntos de interï¿½s para que el NPC se dirija al siguiente punto en la prï¿½xima actualizaciï¿½n
+                tipPlayer = true; // Reinicia la variable tipPlayer para que el NPC no dï¿½ la pista nuevamente hasta que vuelva a colisionar con el jugador
                 timer = 0f;
-                HitCountPlayer(1); // Incrementa el contador de colisiones con el jugador para llevar la cuenta de cuántas veces el NPC ha dado la pista al jugador
+                HitCountPlayer(1); // Incrementa el contador de colisiones con el jugador para llevar la cuenta de cuï¿½ntas veces el NPC ha dado la pista al jugador
             }
             else if(tipPlayer == true)
             {
-                StartCoroutine(WaitsecondsToken()); // Si el NPC ya ha dado la pista al jugador, se inicia una corrutina para esperar un tiempo antes de permitir que el NPC dé la pista nuevamente
+                StartCoroutine(WaitsecondsToken()); // Si el NPC ya ha dado la pista al jugador, se inicia una corrutina para esperar un tiempo antes de permitir que el NPC dï¿½ la pista nuevamente
             }
         }
     }

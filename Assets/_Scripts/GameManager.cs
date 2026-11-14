@@ -8,57 +8,63 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public int sceneChange; // Variable para cambiar la escena del juego desde el inspector
-    public bool menuOff = false; // Variable para controlar el estado del men˙ de pausa
+    public bool menuOff = false; // Variable para controlar el estado del men√∫ de pausa
     public bool prefab1; // Variable para controlar si el prefab del enemigo se ha instanciado al recoger 3 objetos
     public bool prefab2;
     public TextMeshProUGUI count; // Referencia al texto que muestra el contador de objetos recogidos
     public GameObject countOut; // Referencia al objeto que contiene el texto del contador para activarlo o desactivarlo
-    public GameObject pause; // Referencia al men˙ de pausa
-    public GameObject next; // Referencia al objeto que se desactivar· al recoger los 6 objetos
-    public GameObject options; // Referencia al men˙ de opciones 
-    public GameObject menu; // Referencia al men˙ principal para desactivarlo al entrar en opciones
-    public GameObject score; // Referencia al prefab del objeto que se recoger· para sumar puntos
+    public GameObject pause; // Referencia al men√∫ de pausa
+    public GameObject next; // Referencia al objeto que se desactivar√° al recoger los 6 objetos
+    public GameObject options; // Referencia al men√∫ de opciones 
+    public GameObject menu; // Referencia al men√∫ principal para desactivarlo al entrar en opciones
+    public GameObject score; // Referencia al prefab del objeto que se recoger√° para sumar puntos
     public GameObject enemy; // Referencia al prefab del enemigo para instanciarlo en la escena
-    public Vector3[] vectors3; // Array de posiciones para instanciar los objetos de puntuaciÛn
-    public Light lightF; // Referencia a la luz que se encender· y apagar· con la tecla L
+    public Vector3[] vectors3; // Array de posiciones para instanciar los objetos de puntuaci√≥n
+    public Light lightF; // Referencia a la luz que se encender√° y apagar√° con la tecla L
     public int objectScore; // Variable para llevar la cuenta de los objetos recogidos
     void Start()
     {
         UpdateScore(0); // Inicializamos el contador de objetos recogidos a 0
-        if (vectors3.Length >= 6) // Verificamos que hay al menos 6 posiciones disponibles para instanciar los objetos
+        if (vectors3.Length >= 3) // Verificamos que hay al menos 6 posiciones disponibles para instanciar los objetos
         {
-            InstansObjects(); // Llamamos al mÈtodo para instanciar los objetos de puntuaciÛn en posiciones aleatorias
+            InstansObjects(); // Llamamos al m√©todo para instanciar los objetos de puntuaci√≥n en posiciones aleatorias
         }
     }
 
     // Update is called once per frame
     void Update()
     {
-        count.text = "Score: " + objectScore.ToString("0"); // Actualizamos el texto del contador de objetos recogidos con el valor actual del contador
-        if (objectScore == 6 && next.transform.rotation.x == 4.69f) // Si se han recogido los 6 objetos y el objeto next est· en la posiciÛn de la puerta, se desactiva el objeto next para permitir el paso
+        if (count != null)
         {
-            next.SetActive(false); // Desactivamos el objeto next para permitir el paso
+            count.text = "Score: " + objectScore.ToString("0"); // Actualizamos el texto del contador de objetos recogidos con el valor actual del contador
+        }
+        if (next != null)
+        {
+            if (objectScore == 3 && next.transform.rotation.x == 4.69f) // Si se han recogido los 6 objetos y el objeto next est√° en la posici√≥n de la puerta, se desactiva el objeto next para permitir el paso
+            {
+                next.SetActive(false); // Desactivamos el objeto next para permitir el paso
+            }
         }
         if (objectScore == 3 && prefab1 == false)
         {
-            Instantiate(enemy, new Vector3(25.727f, 0f, 14.237f), Quaternion.Euler(0, 0, 0)); // Instanciamos el prefab del enemigo en la posiciÛn del prefab con una rotaciÛn sin cambios
+            Instantiate(enemy, new Vector3(25.727f, 0f, 14.237f), Quaternion.Euler(0, 0, 0)); // Instanciamos el prefab del enemigo en la posici√≥n del prefab con una rotaci√≥n sin cambios
             prefab1 = true;
         }
-        if (objectScore == 6 && prefab2 == false)
+        if (objectScore == 3 && prefab2 == false)
         {
-            Instantiate(enemy, new Vector3(-13.76f, 0f, 2.045f), Quaternion.Euler(0, 0, 0)); // Instanciamos el prefab del enemigo en la posiciÛn del prefab con una rotaciÛn sin cambios
+            Instantiate(enemy, new Vector3(-13.76f, 0f, 2.045f), Quaternion.Euler(0, 0, 0)); // Instanciamos el prefab del enemigo en la posici√≥n del prefab con una rotaci√≥n sin cambios
             prefab2 = true;
         }
-        MenuPause(); // Llamamos al mÈtodo para controlar el men˙ de pausa
+        MenuPause(); // Llamamos al m√©todo para controlar el men√∫ de pausa
     }
-    public void UpdateScore(int add) // MÈtodo para actualizar el contador de objetos recogidos, se le pasa un valor que se suma al contador actual
+    public void UpdateScore(int add) // M√©todo para actualizar el contador de objetos recogidos, se le pasa un valor que se suma al contador actual
     {
         objectScore += add; // Sumamos el valor pasado al contador de objetos recogidos
     }
-    public void OnLight(InputValue value) // MÈtodo para controlar la luz con la tecla L, se llama autom·ticamente al presionar la tecla asignada en el Input System
+    public void OnLight(InputValue value) // M√©todo para controlar la luz con la tecla L, se llama autom√°ticamente al presionar la tecla asignada en el Input System
     {
-        if (value.isPressed) // Si la tecla est· presionada, se cambia el estado de la luz (encendida o apagada)
-            lightF.enabled = !lightF.enabled; // Cambiamos el estado de la luz utilizando el operador lÛgico NOT para alternar entre encendida y apagada
+        if (value.isPressed) // Si la tecla est√° presionada, se cambia el estado de la luz (encendida o apagada)
+            lightF.enabled = !lightF.enabled; // Cambiamos el estado de la luz utilizando el operador l√≥gico NOT para alternar entre encendida y apagada
     }
     void InstansObjects()
     {
@@ -69,31 +75,31 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < listaTemporal.Count; i++) // Recorremos la lista temporal para barajarla utilizando el algoritmo de Fisher-Yates
         {
             Vector3 temp = listaTemporal[i]; // Guardamos el elemento actual en una variable temporal
-            int randomIndex = Random.Range(i, listaTemporal.Count); // Generamos un Ìndice aleatorio entre el Ìndice actual y el final de la lista
-            listaTemporal[i] = listaTemporal[randomIndex]; // Asignamos el elemento del Ìndice aleatorio al Ìndice actual
-            listaTemporal[randomIndex] = temp; // Asignamos el elemento guardado en la variable temporal al Ìndice aleatorio, completando el intercambio de elementos
+            int randomIndex = Random.Range(i, listaTemporal.Count); // Generamos un √≠ndice aleatorio entre el √≠ndice actual y el final de la lista
+            listaTemporal[i] = listaTemporal[randomIndex]; // Asignamos el elemento del √≠ndice aleatorio al √≠ndice actual
+            listaTemporal[randomIndex] = temp; // Asignamos el elemento guardado en la variable temporal al √≠ndice aleatorio, completando el intercambio de elementos
         }
 
-        for (int i = 0; i < 6; i++) // Recorremos las primeras 6 posiciones de la lista temporal (que ahora est· barajada) para instanciar los objetos de puntuaciÛn en esas posiciones
+        for (int i = 0; i < 3; i++) // Recorremos las primeras 3 posiciones de la lista temporal (que ahora est√° barajada) para instanciar los objetos de puntuaci√≥n en esas posiciones
         {
-            Instantiate(score, listaTemporal[i], Quaternion.Euler(90, 0, 0)); // Instanciamos el prefab del objeto de puntuaciÛn en la posiciÛn correspondiente de la lista temporal, con una rotaciÛn de 90 grados en el eje X para que quede orientado hacia arriba
+            Instantiate(score, listaTemporal[i], Quaternion.Euler(90, 0, 0)); // Instanciamos el prefab del objeto de puntuaci√≥n en la posici√≥n correspondiente de la lista temporal, con una rotaci√≥n de 90 grados en el eje X para que quede orientado hacia arriba
         }
     }
     public void MenuPause() //Metodo menu de pausa
     {
-        if (Input.GetKeyDown(KeyCode.P) && !menuOff) //CondiciÛn tecla menu de apusa
+        if (Input.GetKeyDown(KeyCode.P) && !menuOff) //Condici√≥n tecla menu de apusa
         {
             Cursor.lockState = CursorLockMode.None; // desbloqueamos el cursor
             Cursor.visible = true; // hacemos visible el cursor
             Time.timeScale = 0; // pausamos el tiempo del juego
-            pause.SetActive(true); // activamos el men˙ de pausa
+            pause.SetActive(true); // activamos el men√∫ de pausa
         }
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.Locked; // bloqueamos el cursor
             Cursor.visible = false; // hacemos invisible el cursor
             Time.timeScale = 1; // reanudamos el tiempo del juego
-            pause.SetActive(false); // desactivamos el men˙ de pausa
+            pause.SetActive(false); // desactivamos el men√∫ de pausa
         }
     }
     public void Continue() // Metodo para continuar el juego
@@ -101,7 +107,7 @@ public class GameManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked; // bloqueamos el cursor
         Cursor.visible = false; // hacemos invisible el cursor
         Time.timeScale = 1; // reanudamos el tiempo del juego
-        pause.SetActive(false); // desactivamos el men˙ de pausa
+        pause.SetActive(false); // desactivamos el men√∫ de pausa
     }
     public void PlayGame() // Metodo para iniciar el juego
     {
@@ -109,13 +115,13 @@ public class GameManager : MonoBehaviour
     }
     public void Options() // Metodo para ir a las opciones
     {
-        options.SetActive(true); // activamos el men˙ de opciones
-        menu.SetActive(false); // desactivamos el men˙ principal
+        options.SetActive(true); // activamos el men√∫ de opciones
+        menu.SetActive(false); // desactivamos el men√∫ principal
     }
     public void Back() // Metodo para volver al menu de pausa o principal dependiendo la escena
     {
-        options.SetActive(false); // desactivamos el men˙ de opciones
-        menu.SetActive(true); // activamos el men˙ principal
+        options.SetActive(false); // desactivamos el men√∫ de opciones
+        menu.SetActive(true); // activamos el men√∫ principal
     }
     public void ExitGame() // Metodo para salir del juego
     {

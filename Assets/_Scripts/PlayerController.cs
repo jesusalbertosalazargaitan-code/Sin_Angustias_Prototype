@@ -6,115 +6,126 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
-    public float suavizadoAnimacion = 0.1f; // Variable para controlar la suavizaciÛn de las animaciones,
+    public float suavizadoAnimacion = 0.1f; // Variable para controlar la suavizaci√≥n de las animaciones,
     public float speed = 3.5f; // Variable para controlar la velocidad de movimiento del jugador, que se puede ajustar en el Inspector de Unity para encontrar la velocidad que mejor se adapte al juego
-    public float velocidad = 0.0f; // Variable para almacenar la velocidad actual del jugador, que se actualizar· en funciÛn del input de movimiento y se utilizar· para controlar las animaciones de movimiento (caminando o corriendo) en el Animator
-    private float velocidadSmooth;// Variable para almacenar la velocidad suavizada del jugador, que se calcular· utilizando Mathf.MoveTowards para crear transiciones suaves entre las animaciones de movimiento en el Animator
-    public bool GameOver = false;// Variable para indicar si el juego ha terminado, lo que puede afectar la lÛgica del movimiento, las animaciones y las interacciones del jugador con el entorno, como desactivar el movimiento o mostrar una pantalla de Game Over
-    public bool safeZone = false;// Variable para indicar si el jugador est· en una zona segura, lo que puede afectar la lÛgica del juego relacionada con la seguridad del jugador y la interacciÛn con enemigos o eventos peligrosos
-    public GameManager gameManager;// Variable para almacenar una referencia al GameManager en la escena, lo que nos permitir· acceder a la puntuaciÛn del jugador y otras variables relacionadas con la lÛgica del juego para controlar el flujo del juego en funciÛn de la puntuaciÛn y el estado del juego
-    private Vector2 inputMove; //Variable para almacenar el input de movimiento del jugador, que se actualizar· en funciÛn de las entradas del jugador (como WASD o el joystick) y se utilizar· para calcular la direcciÛn y la velocidad del movimiento del jugador en el mÈtodo Move
-    Rigidbody rb; // Variable para almacenar una referencia al componente Rigidbody del jugador, lo que nos permitir· controlar el movimiento del jugador aplicando fuerzas o estableciendo la velocidad del Rigidbody en el mÈtodo Move
-    Animator anim;// Variable para almacenar una referencia al componente Animator del jugador, lo que nos permitir· controlar las animaciones del jugador estableciendo par·metros en el Animator en el mÈtodo Animations y otras partes del cÛdigo para activar animaciones especÌficas como caminar, correr, atacar o morir
+    public float velocidad = 0.0f; // Variable para almacenar la velocidad actual del jugador, que se actualizar√° en funci√≥n del input de movimiento y se utilizar√° para controlar las animaciones de movimiento (caminando o corriendo) en el Animator
+    private float velocidadSmooth;// Variable para almacenar la velocidad suavizada del jugador, que se calcular√° utilizando Mathf.MoveTowards para crear transiciones suaves entre las animaciones de movimiento en el Animator
+    public bool GameOver = false;// Variable para indicar si el juego ha terminado, lo que puede afectar la l√≥gica del movimiento, las animaciones y las interacciones del jugador con el entorno, como desactivar el movimiento o mostrar una pantalla de Game Over
+    public bool safeZone = false;// Variable para indicar si el jugador est√° en una zona segura, lo que puede afectar la l√≥gica del juego relacionada con la seguridad del jugador y la interacci√≥n con enemigos o eventos peligrosos
+    public GameManager gameManager;// Variable para almacenar una referencia al GameManager en la escena, lo que nos permitir√° acceder a la puntuaci√≥n del jugador y otras variables relacionadas con la l√≥gica del juego para controlar el flujo del juego en funci√≥n de la puntuaci√≥n y el estado del juego
+    private Vector2 inputMove; //Variable para almacenar el input de movimiento del jugador, que se actualizar√° en funci√≥n de las entradas del jugador (como WASD o el joystick) y se utilizar√° para calcular la direcci√≥n y la velocidad del movimiento del jugador en el m√©todo Move
+    Rigidbody rb; // Variable para almacenar una referencia al componente Rigidbody del jugador, lo que nos permitir√° controlar el movimiento del jugador aplicando fuerzas o estableciendo la velocidad del Rigidbody en el m√©todo Move
+    Animator anim;// Variable para almacenar una referencia al componente Animator del jugador, lo que nos permitir√° controlar las animaciones del jugador estableciendo par√°metros en el Animator en el m√©todo Animations y otras partes del c√≥digo para activar animaciones espec√≠ficas como caminar, correr, atacar o morir
     void Awake()
     {
-        // En el mÈtodo Awake, obtenemos referencias a los componentes Animator y Rigidbody del jugador, asÌ como al GameManager en la escena, lo que nos permitir· controlar las animaciones, el movimiento y la lÛgica del juego en funciÛn de la puntuaciÛn y el estado del juego
+        // En el m√©todo Awake, obtenemos referencias a los componentes Animator y Rigidbody del jugador, as√≠ como al GameManager en la escena, lo que nos permitir√° controlar las animaciones, el movimiento y la l√≥gica del juego en funci√≥n de la puntuaci√≥n y el estado del juego
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
         gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
     }
     void Update()
     {
-        // Llamamos al mÈtodo Move para controlar el movimiento del jugador y al mÈtodo Animations para controlar las animaciones del jugador en cada frame, siempre y cuando el juego no haya terminado
+        // Llamamos al m√©todo Move para controlar el movimiento del jugador y al m√©todo Animations para controlar las animaciones del jugador en cada frame, siempre y cuando el juego no haya terminado
         Move();
-        // Llamamos al mÈtodo Animations para controlar las animaciones del jugador en cada frame, verificando si se presiona la tecla de ataque y actualizando los par·metros del Animator en funciÛn del input de movimiento y la velocidad actual del jugador, siempre y cuando el juego no haya terminado
+        // Llamamos al m√©todo Animations para controlar las animaciones del jugador en cada frame, verificando si se presiona la tecla de ataque y actualizando los par√°metros del Animator en funci√≥n del input de movimiento y la velocidad actual del jugador, siempre y cuando el juego no haya terminado
         Animations();
     }
-    // MÈtodo que se llama cuando se recibe una entrada de movimiento, actualizando el vector de inputMove con el valor del input de movimiento recibido
+    // M√©todo que se llama cuando se recibe una entrada de movimiento, actualizando el vector de inputMove con el valor del input de movimiento recibido
     public void OnMove(InputValue value) 
     {
-        // Actualizamos el vector de inputMove con el valor del input de movimiento recibido, que es un Vector2 que representa la direcciÛn del movimiento en los ejes horizontal (x) y vertical (y)
+        // Actualizamos el vector de inputMove con el valor del input de movimiento recibido, que es un Vector2 que representa la direcci√≥n del movimiento en los ejes horizontal (x) y vertical (y)
         inputMove = value.Get<Vector2>(); 
     }
-    // MÈtodo que se llama cuando se recibe una entrada de sprint, actualizando la velocidad del jugador en funciÛn de si el botÛn de sprint est· presionado o no
+    // M√©todo que se llama cuando se recibe una entrada de sprint, actualizando la velocidad del jugador en funci√≥n de si el bot√≥n de sprint est√° presionado o no
     public void OnSprint(InputValue value) 
     {
-        // Si el botÛn de sprint est· presionado y el juego no ha terminado, aumentamos la velocidad del jugador a 7f para permitir que corra
+        // Si el bot√≥n de sprint est√° presionado y el juego no ha terminado, aumentamos la velocidad del jugador a 7f para permitir que corra
         if (value.isPressed && GameOver == false) 
             speed = 7f; // Aumentamos la velocidad del jugador a 7f para permitir que corra
-        // Si el botÛn de sprint no est· presionado, restablecemos la velocidad del jugador a 3.5f para que camine a una velocidad normal
+        // Si el bot√≥n de sprint no est√° presionado, restablecemos la velocidad del jugador a 3.5f para que camine a una velocidad normal
         else speed = 3.5f;  
     }
-    // MÈtodo que se llama para mover al jugador, calculando la direcciÛn deseada en funciÛn del input de movimiento y estableciendo la velocidad del Rigidbody en consecuencia, siempre y cuando el juego no haya terminado
+    // M√©todo que se llama para mover al jugador, calculando la direcci√≥n deseada en funci√≥n del input de movimiento y estableciendo la velocidad del Rigidbody en consecuencia, siempre y cuando el juego no haya terminado
     public void Move()
     {
-        // Si el juego no ha terminado, calculamos la direcciÛn deseada en funciÛn del input de movimiento y establecemos la velocidad del Rigidbody para mover al jugador en consecuencia, manteniendo la componente vertical de la velocidad para permitir el salto o la gravedad
+        // Si el juego no ha terminado, calculamos la direcci√≥n deseada en funci√≥n del input de movimiento y establecemos la velocidad del Rigidbody para mover al jugador en consecuencia, manteniendo la componente vertical de la velocidad para permitir el salto o la gravedad
         if (GameOver == false)
         {
-            // Calculamos la direcciÛn deseada en funciÛn del input de movimiento, utilizando el eje forward para el movimiento hacia adelante/atr·s y el eje right para el movimiento lateral
+            // Calculamos la direcci√≥n deseada en funci√≥n del input de movimiento, utilizando el eje forward para el movimiento hacia adelante/atr√°s y el eje right para el movimiento lateral
             Vector3 direccionDeseada = (transform.forward * inputMove.y) + (transform.right * inputMove.x);
-            // Si la magnitud de la direcciÛn deseada es mayor que 1, normalizamos el vector para evitar que el jugador se mueva m·s r·pido en diagonal
+            // Si la magnitud de la direcci√≥n deseada es mayor que 1, normalizamos el vector para evitar que el jugador se mueva m√°s r√°pido en diagonal
             if (direccionDeseada.magnitude > 1)
             {
-                // Normalizamos el vector de direcciÛn deseada para mantener una velocidad constante en todas las direcciones, evitando que el jugador se mueva m·s r·pido en diagonal
+                // Normalizamos el vector de direcci√≥n deseada para mantener una velocidad constante en todas las direcciones, evitando que el jugador se mueva m√°s r√°pido en diagonal
                 direccionDeseada.Normalize();
             }
-            // Establecemos la velocidad del Rigidbody en funciÛn de la direcciÛn deseada multiplicada por la velocidad actual, manteniendo la componente vertical de la velocidad para permitir el salto o la gravedad
+            // Establecemos la velocidad del Rigidbody en funci√≥n de la direcci√≥n deseada multiplicada por la velocidad actual, manteniendo la componente vertical de la velocidad para permitir el salto o la gravedad
             rb.velocity = new Vector3(direccionDeseada.x * speed, rb.velocity.y, direccionDeseada.z * speed);
         }
     }
-    // MÈtodo que se llama para controlar las animaciones del jugador, verificando si se presiona la tecla de ataque y actualizando los par·metros del Animator en funciÛn del input de movimiento y la velocidad actual del jugador, siempre y cuando el juego no haya terminado
+    // M√©todo que se llama para controlar las animaciones del jugador, verificando si se presiona la tecla de ataque y actualizando los par√°metros del Animator en funci√≥n del input de movimiento y la velocidad actual del jugador, siempre y cuando el juego no haya terminado
     public void Animations()
     {
         // Si se presiona la tecla F y el juego no ha terminado
         if (Input.GetKeyDown(KeyCode.F) && GameOver == false)
         {
-            // Activamos la animaciÛn de linterna estableciendo el par·metro "Light" en el Animator a true
+            // Activamos la animaci√≥n de linterna estableciendo el par√°metro "Light" en el Animator a true
             anim.SetBool("Light", true);
         }
-        // Si la tecla F no est· presionada, desactivamos la animaciÛn de linterna estableciendo el par·metro "Light" en el Animator a false
+        // Si la tecla F no est√° presionada, desactivamos la animaci√≥n de linterna estableciendo el par√°metro "Light" en el Animator a false
         else anim.SetBool("Light", false);
-        // Calculamos el objetivo de velocidad para la animaciÛn en funciÛn de la magnitud del input de movimiento y la relaciÛn entre la velocidad actual y la velocidad m·xima (7f es la velocidad m·xima de sprint)
+        // Calculamos el objetivo de velocidad para la animaci√≥n en funci√≥n de la magnitud del input de movimiento y la relaci√≥n entre la velocidad actual y la velocidad m√°xima (7f es la velocidad m√°xima de sprint)
         float objetivo = inputMove.magnitude * (speed / 7f);
-        // Suavizamos la transiciÛn de la velocidad de la animaciÛn utilizando Mathf.MoveTowards
+        // Suavizamos la transici√≥n de la velocidad de la animaci√≥n utilizando Mathf.MoveTowards
         velocidadSmooth = Mathf.MoveTowards(velocidadSmooth, objetivo, Time.deltaTime * 3f);
-        // Establecemos el par·metro "Velocidad" en el Animator con la velocidad suavizada para controlar las animaciones de movimiento (caminando o corriendo) en funciÛn de la velocidad actual del jugador
+        // Establecemos el par√°metro "Velocidad" en el Animator con la velocidad suavizada para controlar las animaciones de movimiento (caminando o corriendo) en funci√≥n de la velocidad actual del jugador
         anim.SetFloat("Velocidad", velocidadSmooth);
     }
-    // MÈtodo que se llama cuando el jugador colisiona con otro objeto, verificando si el objeto colisionado es una zona segura, un enemigo o el final del nivel, y actuando en consecuencia
+    // M√©todo que se llama cuando el jugador colisiona con otro objeto, verificando si el objeto colisionado es una zona segura, un enemigo o el final del nivel, y actuando en consecuencia
     private void OnCollisionEnter(Collision collision)
     {
-        // Si el jugador colisiona con una zona segura y el juego no ha terminado, se establece safeZone en true para indicar que el jugador est· en una zona segura
+        // Si el jugador colisiona con una zona segura y el juego no ha terminado, se establece safeZone en true para indicar que el jugador est√° en una zona segura
         if (collision.collider.CompareTag("SafeZone") && GameOver == false)
             safeZone = true;
-        // Si el jugador colisiona con un enemigo y el juego no ha terminado, se activa la animaciÛn de muerte y se establece GameOver en true para indicar que el juego ha terminado
+        // Si el jugador colisiona con un enemigo y el juego no ha terminado, se activa la animaci√≥n de muerte y se establece GameOver en true para indicar que el juego ha terminado
         if (collision.collider.CompareTag("Enemy") && GameOver == false)
         {
-            // Activa la animaciÛn de muerte estableciendo el par·metro "Dead" en el Animator a true, lo que har· que el jugador muera visualmente en el juego
+            // Activa la animaci√≥n de muerte estableciendo el par√°metro "Dead" en el Animator a true, lo que har√° que el jugador muera visualmente en el juego
             anim.SetBool("Dead", true);
             // Establece GameOver en true para indicar que el juego ha terminado, lo que puede desactivar otras funcionalidades del jugador y mostrar una pantalla de Game Over o reiniciar el nivel
             GameOver = true;
         }
 
-        // Si el jugador colisiona con el objeto final del nivel y el juego no ha terminado, se verifica si el jugador ha alcanzado la puntuaciÛn necesaria para completar el nivel (en este caso, 6), y si es asÌ, se carga la escena principal (Ìndice 0) y se desbloquea el cursor para permitir que el jugador interact˙e con el men˙ o la interfaz de usuario despuÈs de completar el nivel
+        // Si el jugador colisiona con el objeto final del nivel y el juego no ha terminado, se verifica si el jugador ha alcanzado la puntuaci√≥n necesaria para completar el nivel (en este caso, 3 objetos recogidos), y si es as√≠, se carga la escena principal (√≠ndice 0) y se desbloquea el cursor para permitir que el jugador interact√∫e con el men√∫ o la interfaz de usuario despu√©s de completar el nivel
         if (collision.collider.CompareTag("End") && GameOver == false)
         {
-            // Verificamos si el jugador ha alcanzado la puntuaciÛn necesaria para completar el nivel (en este caso, 6 objetos recogidos)
-            if (gameManager.objectScore == 6)
+            // Verificamos si el jugador ha alcanzado la puntuaci√≥n necesaria para completar el nivel (3 objetos o m√°s recogidos)
+            if (gameManager.objectScore >= 3)
             {
-                // Cargamos la escena principal (Ìndice 0) despuÈs de completar el nivel, lo que puede llevar al jugador a un men˙ principal o a la siguiente etapa del juego
-                SceneManager.LoadScene(0);
-                // Desbloqueamos el cursor para permitir que el jugador interact˙e con el men˙ o la interfaz de usuario despuÈs de completar el nivel, lo que es especialmente ˙til si el juego tiene un men˙ principal o una pantalla de puntuaciÛn despuÈs de completar el nivel
+                Time.timeScale = 1f;
+                // Desbloqueamos el cursor para permitir que el jugador interact√∫e con el men√∫ o la interfaz de usuario despu√©s de completar el nivel
                 Cursor.lockState = CursorLockMode.None;
-                // Hacemos visible el cursor para que el jugador pueda verlo y usarlo para interactuar con el men˙ o la interfaz de usuario despuÈs de completar el nivel, lo que mejora la experiencia del usuario al permitirle navegar por las opciones disponibles despuÈs de ganar el juego
                 Cursor.visible = true;
+                // Cargamos la escena principal (√≠ndice 0) despu√©s de completar el nivel
+                SceneManager.LoadScene(0);
             }
         }
     }
-    // MÈtodo que se llama cuando el jugador deja de colisionar con otro objeto, verificando si el objeto dejado de colisionar es una zona segura, y si es asÌ, se establece safeZone en false para indicar que el jugador ya no est· en una zona segura
+
+    // Respaldo de seguridad para cuando el objeto final del nivel es un Trigger
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("End") && GameOver == false && gameManager.objectScore >= 3)
+        {
+            Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+    // M√©todo que se llama cuando el jugador deja de colisionar con otro objeto, verificando si el objeto dejado de colisionar es una zona segura, y si es as√≠, se establece safeZone en false para indicar que el jugador ya no est√° en una zona segura
     private void OnCollisionExit(Collision collision) 
     {
-        // Si el jugador deja de colisionar con una zona segura y el juego no ha terminado, se establece safeZone en false para indicar que el jugador ya no est· en una zona segura, lo que puede afectar la lÛgica del juego relacionada con la seguridad del jugador y la interacciÛn con enemigos o eventos peligrosos
+        // Si el jugador deja de colisionar con una zona segura y el juego no ha terminado, se establece safeZone en false para indicar que el jugador ya no est√° en una zona segura, lo que puede afectar la l√≥gica del juego relacionada con la seguridad del jugador y la interacci√≥n con enemigos o eventos peligrosos
         if (collision.collider.CompareTag("SafeZone") && GameOver == false) 
             safeZone = false;
     }

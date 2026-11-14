@@ -9,12 +9,9 @@ EditorBuildSettings:
     path: "Assets/_Scenes/MainMen\xFA.unity"
     guid: c627cea114de3d44dbc3bd74b84ba447
   - enabled: 1
-    path: Assets/_Scenes/Lvl1.unity
-    guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 1
-    path: Assets/_Scenes/Lvl1 1.unity
+    path: Assets/_Scenes/Lvl 1.unity
     guid: c4bcf0bff750de541af0dd86b086c932
   - enabled: 1
-    path: Assets/_Scenes/lvl11.unity
-    guid: bcd0b37f64520794e972b4d9201ef850
+    path: Assets/_Scenes/Lvl 2.unity
+    guid: 8004bc85b3cebc44e9fa67c6306332ae
   m_configObjects: {}
