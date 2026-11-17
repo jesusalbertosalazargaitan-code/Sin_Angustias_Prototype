@@ -22,8 +22,14 @@ public class GameManager : MonoBehaviour
     public Vector3[] vectors3; // Array de posiciones para instanciar los objetos de puntuación
     public Light lightF; // Referencia a la luz que se encenderá y apagará con la tecla L
     public int objectScore; // Variable para llevar la cuenta de los objetos recogidos
+    void Awake()
+    {
+        DynamicGI.UpdateEnvironment();
+    }
+
     void Start()
     {
+        DynamicGI.UpdateEnvironment();
         UpdateScore(0); // Inicializamos el contador de objetos recogidos a 0
         if (vectors3.Length >= 3) // Verificamos que hay al menos 6 posiciones disponibles para instanciar los objetos
         {
@@ -111,6 +117,7 @@ public class GameManager : MonoBehaviour
     }
     public void PlayGame() // Metodo para iniciar el juego
     {
+        DynamicGI.UpdateEnvironment();
         SceneManager.LoadScene(sceneChange); // Cargamos la escena del juego con una variable para cambiarla desde el inspector
     }
     public void Options() // Metodo para ir a las opciones

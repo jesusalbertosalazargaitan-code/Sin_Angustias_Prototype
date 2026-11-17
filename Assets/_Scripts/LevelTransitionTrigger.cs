@@ -23,6 +23,7 @@ public class LevelTransitionTrigger : MonoBehaviour
                 Cursor.visible = true;
             }
 
+            DynamicGI.UpdateEnvironment();
             SceneManager.LoadScene(targetSceneName);
         }
     }
