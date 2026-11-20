@@ -18,6 +18,10 @@ public class RelicInventoryUI : MonoBehaviour
     [Header("Salida Caver 1")]
     public DoorSlideController exitDoor;
 
+    [Header("Audio Recolección")]
+    public AudioSource pickupAudioSource;
+    public AudioClip pickupClip;
+
     private readonly Color colorIncompleto = new Color(0.70f, 0.70f, 0.70f, 0.85f);
     private readonly Color colorSol = new Color(1.0f, 0.85f, 0.2f, 1.0f);        // Dorado
     private readonly Color colorLuna = new Color(0.4f, 0.8f, 1.0f, 1.0f);        // Azul celeste
@@ -45,6 +49,11 @@ public class RelicInventoryUI : MonoBehaviour
 
         // Actualizar visualmente la UI
         UpdateUI();
+
+        if (pickupAudioSource != null && pickupClip != null)
+        {
+            pickupAudioSource.PlayOneShot(pickupClip);
+        }
 
         // Notificar al GameManager para compatibilidad con contador y EnemyIA
         GameManager gm = Object.FindObjectOfType<GameManager>();

@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -19,17 +20,30 @@ public class GameManager : MonoBehaviour
     public GameObject menu; // Referencia al menú principal para desactivarlo al entrar en opciones
     public GameObject score; // Referencia al prefab del objeto que se recogerá para sumar puntos
     public GameObject enemy; // Referencia al prefab del enemigo para instanciarlo en la escena
+    public GameObject end;
     public Vector3[] vectors3; // Array de posiciones para instanciar los objetos de puntuación
     public Light lightF; // Referencia a la luz que se encenderá y apagará con la tecla L
     public int objectScore; // Variable para llevar la cuenta de los objetos recogidos
     void Awake()
     {
+        float savedVolume = PlayerPrefs.GetFloat("MasterVolume", 1.0f);
+        AudioListener.volume = Mathf.Clamp01(savedVolume);
         DynamicGI.UpdateEnvironment();
     }
 
     void Start()
     {
         DynamicGI.UpdateEnvironment();
+        if (options != null)
+        {
+            Slider volumeSlider = options.GetComponentInChildren<Slider>(true);
+            if (volumeSlider != null)
+            {
+                volumeSlider.SetValueWithoutNotify(AudioListener.volume);
+                volumeSlider.onValueChanged.RemoveListener(SetVolume);
+                volumeSlider.onValueChanged.AddListener(SetVolume);
+            }
+        }
         UpdateScore(0); // Inicializamos el contador de objetos recogidos a 0
         if (vectors3.Length >= 3) // Verificamos que hay al menos 6 posiciones disponibles para instanciar los objetos
         {
@@ -49,17 +63,20 @@ public class GameManager : MonoBehaviour
             if (objectScore == 3 && next.transform.rotation.x == 4.69f) // Si se han recogido los 6 objetos y el objeto next está en la posición de la puerta, se desactiva el objeto next para permitir el paso
             {
                 next.SetActive(false); // Desactivamos el objeto next para permitir el paso
+                end.SetActive(true);
             }
         }
         if (objectScore == 3 && prefab1 == false)
         {
             Instantiate(enemy, new Vector3(25.727f, 0f, 14.237f), Quaternion.Euler(0, 0, 0)); // Instanciamos el prefab del enemigo en la posición del prefab con una rotación sin cambios
             prefab1 = true;
+            end.SetActive(true);
         }
         if (objectScore == 3 && prefab2 == false)
         {
             Instantiate(enemy, new Vector3(-13.76f, 0f, 2.045f), Quaternion.Euler(0, 0, 0)); // Instanciamos el prefab del enemigo en la posición del prefab con una rotación sin cambios
             prefab2 = true;
+            end.SetActive(true);
         }
         MenuPause(); // Llamamos al método para controlar el menú de pausa
     }
@@ -129,6 +146,12 @@ public class GameManager : MonoBehaviour
     {
         options.SetActive(false); // desactivamos el menú de opciones
         menu.SetActive(true); // activamos el menú principal
+    }
+    public void SetVolume(float value)
+    {
+        AudioListener.volume = Mathf.Clamp01(value);
+        PlayerPrefs.SetFloat("MasterVolume", AudioListener.volume);
+        PlayerPrefs.Save();
     }
     public void ExitGame() // Metodo para salir del juego
     {

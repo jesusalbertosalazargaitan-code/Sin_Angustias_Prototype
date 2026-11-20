@@ -20,6 +20,7 @@ public class EnemyIA : MonoBehaviour
     private NavMeshAgent agente; // Componentes y estado interno
     private PlayerController playerController; // Referencia al PlayerController para verificar si el jugador está en la zona segura
     private bool jugadorEnVista; // Si el jugador está dentro del radio de visión
+    private bool persiguiendoJugador = false;
     public bool walkUp = false; // Si el enemigo está caminando erguido (después de recoger 3 objetos)
     bool GameOver = false; // Si el juego ha terminado (para evitar que la IA siga actuando después de ganar o perder)
     private bool transformado = false; // Bandera para que la transformación de score 3 solo se ejecute una única vez
@@ -53,10 +54,19 @@ public class EnemyIA : MonoBehaviour
         // Comportamiento: Si el jugador está en vista y no está en la zona segura, perseguirlo. Si no, deambular.
         if (jugadorEnVista && PuedoVerAlJugador() && !playerController.safeZone && GameOver == false)
         {
+            if (!persiguiendoJugador)
+            {
+                persiguiendoJugador = true;
+                if (SuspenseAudioController.Instance != null)
+                {
+                    SuspenseAudioController.Instance.TryPlaySuspense();
+                }
+            }
             PerseguirJugador();
         }
         else
         {
+            persiguiendoJugador = false;
             DeambularAletorio();// Si el jugador no está en vista o está en la zona segura, deambular
         }
         // Cambios de estado basados en el puntaje del jugador
@@ -203,6 +213,7 @@ public class EnemyIA : MonoBehaviour
         if (collision.gameObject.CompareTag("Player") && GameOver == false) 
         {
             anim.SetBool("Dead", true); // Activa la animación de muerte estableciendo el parámetro "Dead" en el Animator a true
+            playerController.GameOver = true;
             GameOver = true; // El juego ha terminado, así que establecemos GameOver a true para evitar que la IA siga actuando
             StartCoroutine(DeadTime()); // Inicia la corrutina para esperar 10 segundos antes de cargar la escena de Game Over
         }
@@ -210,7 +221,7 @@ public class EnemyIA : MonoBehaviour
     // Espera 10 segundos después de la muerte para cargar la escena de Game Over
     IEnumerator DeadTime() 
     {
-        yield return new WaitForSeconds(10f);
+        yield return new WaitForSeconds(2f);
         SceneManager.LoadScene(1); // Carga la escena de Game Over (asegúrate de que la escena de Game Over esté en el índice 1 en la configuración de escenas)
     }
 }

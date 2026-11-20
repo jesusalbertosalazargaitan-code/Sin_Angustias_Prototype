@@ -64,7 +64,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -123,6 +123,7 @@ MonoBehaviour:
   timer: 0
   speed: 3.5
   visionRate: 0
+  wanderRate: 0
   wayPoints:
   - {x: 0.352, y: 0.5, z: 29.93}
   - {x: 21.54, y: 0.5, z: 58.18}

@@ -12,7 +12,14 @@ public class PlayerController : MonoBehaviour
     private float velocidadSmooth;// Variable para almacenar la velocidad suavizada del jugador, que se calculará utilizando Mathf.MoveTowards para crear transiciones suaves entre las animaciones de movimiento en el Animator
     public bool GameOver = false;// Variable para indicar si el juego ha terminado, lo que puede afectar la lógica del movimiento, las animaciones y las interacciones del jugador con el entorno, como desactivar el movimiento o mostrar una pantalla de Game Over
     public bool safeZone = false;// Variable para indicar si el jugador está en una zona segura, lo que puede afectar la lógica del juego relacionada con la seguridad del jugador y la interacción con enemigos o eventos peligrosos
+    
+    
     public GameManager gameManager;// Variable para almacenar una referencia al GameManager en la escena, lo que nos permitirá acceder a la puntuación del jugador y otras variables relacionadas con la lógica del juego para controlar el flujo del juego en función de la puntuación y el estado del juego
+    [Header("Audio")]
+    public AudioSource footstepSource;
+    public AudioSource sfxSource;
+    public AudioClip flashlightClip;
+
     private Vector2 inputMove; //Variable para almacenar el input de movimiento del jugador, que se actualizará en función de las entradas del jugador (como WASD o el joystick) y se utilizará para calcular la dirección y la velocidad del movimiento del jugador en el método Move
     Rigidbody rb; // Variable para almacenar una referencia al componente Rigidbody del jugador, lo que nos permitirá controlar el movimiento del jugador aplicando fuerzas o estableciendo la velocidad del Rigidbody en el método Move
     Animator anim;// Variable para almacenar una referencia al componente Animator del jugador, lo que nos permitirá controlar las animaciones del jugador estableciendo parámetros en el Animator en el método Animations y otras partes del código para activar animaciones específicas como caminar, correr, atacar o morir
@@ -45,6 +52,13 @@ public class PlayerController : MonoBehaviour
         // Si el botón de sprint no está presionado, restablecemos la velocidad del jugador a 3.5f para que camine a una velocidad normal
         else speed = 3.5f;  
     }
+    public void OnFlashlight()
+    {
+        if (sfxSource != null && flashlightClip != null && !GameOver && Time.timeScale > 0f)
+        {
+            sfxSource.PlayOneShot(flashlightClip, 0.85f);
+        }
+    }
     // Método que se llama para mover al jugador, calculando la dirección deseada en función del input de movimiento y estableciendo la velocidad del Rigidbody en consecuencia, siempre y cuando el juego no haya terminado
     public void Move()
     {
@@ -61,6 +75,29 @@ public class PlayerController : MonoBehaviour
             }
             // Establecemos la velocidad del Rigidbody en función de la dirección deseada multiplicada por la velocidad actual, manteniendo la componente vertical de la velocidad para permitir el salto o la gravedad
             rb.velocity = new Vector3(direccionDeseada.x * speed, rb.velocity.y, direccionDeseada.z * speed);
+            bool isMoving = inputMove.sqrMagnitude > 0.01f;
+            if (footstepSource != null)
+            {
+                if (isMoving && Time.timeScale > 0f)
+                {
+                    footstepSource.pitch = (speed > 5f) ? 1.35f : 1.0f;
+                    if (!footstepSource.isPlaying)
+                    {
+                        footstepSource.Play();
+                    }
+                }
+                else if (footstepSource.isPlaying)
+                {
+                    footstepSource.Pause();
+                }
+            }
+        }
+        else
+        {
+            if (footstepSource != null && footstepSource.isPlaying)
+            {
+                footstepSource.Pause();
+            }
         }
     }
     // Método que se llama para controlar las animaciones del jugador, verificando si se presiona la tecla de ataque y actualizando los parámetros del Animator en función del input de movimiento y la velocidad actual del jugador, siempre y cuando el juego no haya terminado
@@ -71,6 +108,7 @@ public class PlayerController : MonoBehaviour
         {
             // Activamos la animación de linterna estableciendo el parámetro "Light" en el Animator a true
             anim.SetBool("Light", true);
+            OnFlashlight();
         }
         // Si la tecla F no está presionada, desactivamos la animación de linterna estableciendo el parámetro "Light" en el Animator a false
         else anim.SetBool("Light", false);

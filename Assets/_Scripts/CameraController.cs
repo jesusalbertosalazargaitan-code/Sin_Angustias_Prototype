@@ -1,48 +1,178 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Cinemachine;
+using UnityEngine.SceneManagement;
+using System.Collections;
+using System.Collections.Generic;
 
 public class CameraController : MonoBehaviour
-{   public PlayerController playerController; // Referencia al PlayerController para verificar el estado del juego
-    private Vector2 inputMove; // Variable para almacenar la entrada del mouse
-    public Transform player; // Referencia al transform del jugador para rotarlo horizontalmente
-    public float sensibylity; // Variable para ajustar la sensibilidad del mouse, configurable desde el inspector
-    private float rotationVertical = 0;
+{
+    [Header("Referencias Existentes")]
+    public PlayerController playerController;
+    public Transform player;
+    public float sensibylity = 15f;
+    public Transform flashlightTransform;
+    public Transform armBone;
+
+    [Header("Cinemachine First-Person")]
+    public CinemachineVirtualCamera virtualCamera;
+    public float baseFOV = 70f;
+    public float sprintFOV = 75f;
+    public float fovSmoothSpeed = 8f;
+
+    private CinemachineBrain brain;
+    private CinemachinePOV pov;
+    private CinemachineInputProvider inputProvider;
+    private Transform cameraRoot;
+    public bool activeCam = false;
+
     void Start()
     {
-        // Obtiene la referencia al PlayerController buscando el objeto con el nombre "Player" en la escena y accediendo a su componente PlayerController
-        playerController = GameObject.Find("Player").GetComponent<PlayerController>();
-        Cursor.lockState = CursorLockMode.Locked; // Bloqueamos el cursor para que no se vea ni se mueva fuera de la ventana del juego
-        Cursor.visible = false; // Hacemos invisible el cursor para que no distraiga durante el juego
+        StartCoroutine(WaitsecondsCam());
+
+        if (playerController == null)
+        {
+            GameObject pObj = GameObject.FindGameObjectWithTag("Player");
+            if (pObj == null) pObj = GameObject.Find("Player");
+            if (pObj != null) playerController = pObj.GetComponent<PlayerController>();
+        }
+        if (player == null)
+        {
+            if (playerController != null)
+                player = playerController.transform;
+            else
+                player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        }
+
+        if (player != null)
+        {
+            cameraRoot = player.Find("CameraRoot");
+            if (armBone == null)
+                armBone = FindChildRecursive(player, "RightArm");
+            if (flashlightTransform == null)
+            {
+                Light spot = player.GetComponentInChildren<Light>(true);
+                if (spot != null && spot.transform != transform && !spot.transform.IsChildOf(transform))
+                    flashlightTransform = spot.transform;
+            }
+        }
+
+        brain = GetComponent<CinemachineBrain>();
+        if (virtualCamera == null) virtualCamera = FindFirstObjectByType<CinemachineVirtualCamera>();
+
+        if (virtualCamera != null)
+        {
+            pov = virtualCamera.GetCinemachineComponent<CinemachinePOV>();
+            inputProvider = virtualCamera.GetComponent<CinemachineInputProvider>();
+
+            if (pov != null)
+            {
+                // LÃ­mites anatÃ³micos naturales del cuello humano
+                pov.m_VerticalAxis.m_MinValue = -60f;
+                pov.m_VerticalAxis.m_MaxValue = 65f;
+                pov.m_VerticalAxis.m_Wrap = false;
+                pov.m_HorizontalAxis.m_MinValue = -180f;
+                pov.m_HorizontalAxis.m_MaxValue = 180f;
+                pov.m_HorizontalAxis.m_Wrap = true;
+
+                if (player != null)
+                    pov.m_HorizontalAxis.Value = player.eulerAngles.y;
+
+                // Calibra velocidad para <Mouse>/delta (pÃ­xeles/frame)
+                float gain = Mathf.Max(0.05f, sensibylity * 0.015f);
+                pov.m_VerticalAxis.m_SpeedMode = AxisState.SpeedMode.InputValueGain;
+                pov.m_HorizontalAxis.m_SpeedMode = AxisState.SpeedMode.InputValueGain;
+                pov.m_VerticalAxis.m_MaxSpeed = gain;
+                pov.m_HorizontalAxis.m_MaxSpeed = gain;
+            }
+        }
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
+
+    // Mantiene compatibilidad con UnityEvents antiguos de PlayerInput sin duplicar rotaciÃ³n
+    public void OnCamera(InputValue value) { }
+
     void Update()
     {
-        // Solo permite mover la cámara si el juego no ha terminado, evitando que el jugador pueda seguir moviendo la cámara después de ganar o perder
-        if (playerController.GameOver == false) 
-            MoveMouse(); // Llama al método para mover la cámara basado en la entrada del mouse
+        bool isDead = playerController != null && playerController.GameOver;
+        bool isPaused = Time.timeScale == 0f;
+
+        if (isDead && activeCam == true)
+        {
+            // Desactiva CinemachineBrain para que el Animator ejecute la animaciÃ³n de muerte sobre Main Camera
+            if (brain != null && brain.enabled && activeCam == true) brain.enabled = false;
+            if (inputProvider != null && inputProvider.enabled && activeCam == true) inputProvider.enabled = false;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            return;
+        }
+
+        if (isPaused)
+        {
+            if (inputProvider != null && inputProvider.enabled && activeCam == true) inputProvider.enabled = false;
+            return;
+        }
+
+        if (brain != null && !brain.enabled && activeCam == true) brain.enabled = true;
+        if (inputProvider != null && !inputProvider.enabled && activeCam == true) inputProvider.enabled = true;
+
+        // FOV DinÃ¡mico en la Virtual Camera
+        if (virtualCamera != null && playerController != null && activeCam == true)
+        {
+            bool isSprinting = playerController.speed > 4.5f;
+            float targetFOV = isSprinting ? sprintFOV : baseFOV;
+            virtualCamera.m_Lens.FieldOfView = Mathf.Lerp(virtualCamera.m_Lens.FieldOfView, targetFOV, Time.deltaTime * fovSmoothSpeed);
+        }
     }
-    // Método para recibir la entrada del mouse, se llama automáticamente al mover el mouse según lo configurado en el Input System
-    public void OnCamera(InputValue value) 
+
+    void LateUpdate()
     {
-        inputMove = value.Get<Vector2>(); // Almacena la entrada del mouse en la variable inputMove, que se utilizará para mover la cámara en el método MoveMouse
+        if (playerController != null && playerController.GameOver && activeCam == true) return;
+
+        float yaw = (pov != null) ? pov.m_HorizontalAxis.Value : transform.eulerAngles.y;
+        float pitch = (pov != null) ? pov.m_VerticalAxis.Value : transform.localEulerAngles.x;
+        if (pitch > 180f && activeCam == true) pitch -= 360f;
+
+        // 1. Alinea horizontalmente el cuerpo 1:1 con la mirada para girar todo el cuerpo y nunca ver la espalda
+        if (player != null && activeCam == true)
+        {
+            player.rotation = Quaternion.Euler(0f, yaw, 0f);
+        }
+
+        // Mantiene la posiciÃ³n exacta en los ojos (CameraRoot) y evita doble rotaciÃ³n heredada por ser hija de Player
+        if (cameraRoot != null && activeCam == true)
+        {
+            transform.position = cameraRoot.position;
+        }
+        transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
+
+        // 2. Inclina el brazo derecho suavemente en el plano vertical
+        if (armBone != null && player != null && activeCam == true)
+        {
+            armBone.Rotate(player.right, pitch * 0.6f, Space.World);
+        }
+
+        // 3. Garantiza que la linterna apunte exactamente a donde mira la cÃ¡mara
+        if (flashlightTransform != null && flashlightTransform != transform && activeCam == true)
+        {
+            flashlightTransform.rotation = Quaternion.LookRotation(transform.forward, transform.up);
+        }
     }
-    // Método para mover la cámara basado en la entrada del mouse, ajustando la sensibilidad y el tiempo para que el movimiento sea suave y consistente
-    void MoveMouse()
+
+    private Transform FindChildRecursive(Transform parent, string name)
     {
-        // Calcula el movimiento horizontal y vertical multiplicando la entrada del mouse por la sensibilidad y el tiempo delta para que el movimiento sea suave y consistente
-        float MoveX = inputMove.x * sensibylity * Time.deltaTime;
-        float MoveY = inputMove.y * sensibylity * Time.deltaTime;
-        // Rota la cámara verticalmente restando el movimiento vertical al ángulo de rotación vertical, y luego clampa ese ángulo para evitar que la cámara gire demasiado hacia arriba o hacia abajo
-        rotationVertical -= MoveY;
-        // Clampa el ángulo de rotación vertical entre -60 y 60 grados para evitar que la cámara gire demasiado hacia arriba o hacia abajo, lo que podría resultar incómodo para el jugador
-        rotationVertical = Mathf.Clamp(rotationVertical, -60, 60);
-        // Aplica la rotación vertical a la cámara utilizando un quaternion que representa una rotación en el eje X, lo que permite que la cámara gire hacia arriba y hacia abajo sin afectar la rotación horizontal del jugador
-        transform.localRotation = Quaternion.Euler(rotationVertical, 0f, 0f);
-        // Rota el jugador horizontalmente multiplicando el movimiento horizontal por un vector que representa la rotación en el eje Y, lo que permite que el jugador gire hacia los lados sin afectar la rotación vertical de la cámara
-        player.Rotate(Vector3.up * MoveX);
-        
-            
-        
+        foreach (Transform child in parent.GetComponentsInChildren<Transform>(true))
+        {
+            if (child.name.Contains(name))
+                return child;
+        }
+        return null;
+    }
+    IEnumerator WaitsecondsCam()
+    {
+        yield return new WaitForSeconds(3f);
+        activeCam = true;
     }
 }
