@@ -172,7 +172,7 @@ public class CameraController : MonoBehaviour
     }
     IEnumerator WaitsecondsCam()
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(4f);
         activeCam = true;
     }
 }

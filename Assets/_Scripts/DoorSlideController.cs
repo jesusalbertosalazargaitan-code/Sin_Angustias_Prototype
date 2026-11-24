@@ -30,7 +30,7 @@ public class DoorSlideController : MonoBehaviour
             audioSource = GetComponent<AudioSource>();
         }
     }
-
+    
     public void OpenDoor()
     {
         if (isOpen) return;
@@ -46,6 +46,8 @@ public class DoorSlideController : MonoBehaviour
 
     private IEnumerator SlideRoutine()
     {
+        yield return new WaitForSeconds(5f);
+
         while (Vector3.Distance(transform.position, targetPosition) > 0.01f)
         {
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, slideSpeed * Time.deltaTime);

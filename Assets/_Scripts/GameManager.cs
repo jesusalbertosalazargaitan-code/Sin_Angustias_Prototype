@@ -8,14 +8,15 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
+    [Header("Configuración de Ventana")]
+    public int anchoVentana = 1270;
+    public int altoVentana = 720;
+
     public int sceneChange; // Variable para cambiar la escena del juego desde el inspector
     public bool menuOff = false; // Variable para controlar el estado del menú de pausa
-    public bool prefab1; // Variable para controlar si el prefab del enemigo se ha instanciado al recoger 3 objetos
-    public bool prefab2;
-    public TextMeshProUGUI count; // Referencia al texto que muestra el contador de objetos recogidos
-    public GameObject countOut; // Referencia al objeto que contiene el texto del contador para activarlo o desactivarlo
+    public bool activeEnemy = true;
+    public bool lvl1 = false;
     public GameObject pause; // Referencia al menú de pausa
-    public GameObject next; // Referencia al objeto que se desactivará al recoger los 6 objetos
     public GameObject options; // Referencia al menú de opciones 
     public GameObject menu; // Referencia al menú principal para desactivarlo al entrar en opciones
     public GameObject score; // Referencia al prefab del objeto que se recogerá para sumar puntos
@@ -54,29 +55,15 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (count != null)
+        if (Input.GetKeyDown(KeyCode.F11))
         {
-            count.text = "Score: " + objectScore.ToString("0"); // Actualizamos el texto del contador de objetos recogidos con el valor actual del contador
+            ScreenVision();
         }
-        if (next != null)
+        if (objectScore == 3 && activeEnemy == true)
         {
-            if (objectScore == 3 && next.transform.rotation.x == 4.69f) // Si se han recogido los 6 objetos y el objeto next está en la posición de la puerta, se desactiva el objeto next para permitir el paso
-            {
-                next.SetActive(false); // Desactivamos el objeto next para permitir el paso
-                end.SetActive(true);
-            }
-        }
-        if (objectScore == 3 && prefab1 == false)
-        {
-            Instantiate(enemy, new Vector3(25.727f, 0f, 14.237f), Quaternion.Euler(0, 0, 0)); // Instanciamos el prefab del enemigo en la posición del prefab con una rotación sin cambios
-            prefab1 = true;
+            Instantiate(enemy, new Vector3(84.32f, 0.675f, 68.73f), Quaternion.Euler(0, 0, 0)); // Instanciamos el prefab del enemigo en la posición del prefab con una rotación sin cambios
             end.SetActive(true);
-        }
-        if (objectScore == 3 && prefab2 == false)
-        {
-            Instantiate(enemy, new Vector3(-13.76f, 0f, 2.045f), Quaternion.Euler(0, 0, 0)); // Instanciamos el prefab del enemigo en la posición del prefab con una rotación sin cambios
-            prefab2 = true;
-            end.SetActive(true);
+            activeEnemy = false;
         }
         MenuPause(); // Llamamos al método para controlar el menú de pausa
     }
@@ -110,19 +97,20 @@ public class GameManager : MonoBehaviour
     }
     public void MenuPause() //Metodo menu de pausa
     {
-        if (Input.GetKeyDown(KeyCode.P) && !menuOff) //Condición tecla menu de apusa
+        if (Input.GetKeyDown(KeyCode.P) && !menuOff || Input.GetKeyDown(KeyCode.Escape) && !menuOff) //Condición tecla menu de apusa
         {
             Cursor.lockState = CursorLockMode.None; // desbloqueamos el cursor
             Cursor.visible = true; // hacemos visible el cursor
             Time.timeScale = 0; // pausamos el tiempo del juego
             pause.SetActive(true); // activamos el menú de pausa
         }
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape) && lvl1 == false)
         {
             Cursor.lockState = CursorLockMode.Locked; // bloqueamos el cursor
             Cursor.visible = false; // hacemos invisible el cursor
             Time.timeScale = 1; // reanudamos el tiempo del juego
             pause.SetActive(false); // desactivamos el menú de pausa
+            options.SetActive(false);
         }
     }
     public void Continue() // Metodo para continuar el juego
@@ -156,5 +144,20 @@ public class GameManager : MonoBehaviour
     public void ExitGame() // Metodo para salir del juego
     {
         Application.Quit(); // Salimos del juego
+    }
+    public void ScreenVision()
+    {
+        if (Screen.fullScreen)
+        {
+            // Pasar a modo ventana con resolución 1270x720
+            Screen.SetResolution(anchoVentana, altoVentana, FullScreenMode.Windowed);
+        }
+        else
+        {
+            // Volver a pantalla completa usando la resolución nativa del monitor actual
+            int anchoNativo = Screen.currentResolution.width;
+            int altoNativo = Screen.currentResolution.height;
+            Screen.SetResolution(anchoNativo, altoNativo, FullScreenMode.FullScreenWindow);
+        }
     }
 }

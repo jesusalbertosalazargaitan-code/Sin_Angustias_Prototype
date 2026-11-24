@@ -20,6 +20,7 @@ public class AltarInteraction : MonoBehaviour
 
     [Header("Estado")]
     public bool altarRestaurado = false;
+    public bool doorEnd = false;
 
     private const string TEXTO_INCOMPLETO = "Este es el altar de la diosa del sol y la luna. Busca las 3 reliquias para abrir el paso.";
     private const string TEXTO_RESTAURADO = "¡Has restaurado el Altar del Sol y la Luna! La salida en la caverna se ha abierto.";
@@ -38,6 +39,11 @@ public class AltarInteraction : MonoBehaviour
             if (pedestalLuna != null) pedestalLuna.SetActive(false);
             if (pedestalMezcla != null) pedestalMezcla.SetActive(false);
         }
+    }
+    private void Update()
+    {
+        if(pedestalLuna.activeSelf == true && pedestalMezcla.activeSelf == true && pedestalSol.activeSelf == true)
+            doorEnd = true;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -60,10 +66,6 @@ public class AltarInteraction : MonoBehaviour
                     if (doorSlide != null)
                     {
                         doorSlide.OpenDoor();
-                    }
-                    else
-                    {
-                        puertaSalidaCaver1.SetActive(false);
                     }
                     Debug.Log("[AltarInteraction] ¡Puerta de salida en Caver (1) desbloqueada!");
                 }

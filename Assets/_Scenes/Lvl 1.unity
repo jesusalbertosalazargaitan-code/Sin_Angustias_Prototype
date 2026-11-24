@@ -364,14 +364,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09771279f7ea7e54e961eb14f635a122, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  anchoVentana: 1270
+  altoVentana: 720
   sceneChange: 0
   menuOff: 0
-  prefab1: 0
-  prefab2: 0
-  count: {fileID: 0}
-  countOut: {fileID: 874196380}
+  activeEnemy: 1
+  lvl1: 0
   pause: {fileID: 61253945}
-  next: {fileID: 0}
   options: {fileID: 753868968}
   menu: {fileID: 61253945}
   score: {fileID: 374289202576707483, guid: 78df1db2fbc8ec64f949fac0c05bf693, type: 3}
@@ -4097,6 +4096,59 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a2d11066257665943b4f5d14d3afb84d, type: 3}
+--- !u!1 &357457436
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 357457438}
+  - component: {fileID: 357457437}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!65 &357457437
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 357457436}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 7.9490967, y: 30.465298, z: 1}
+  m_Center: {x: 3.4745483, y: 4.6266627, z: 0.00000070076146}
+--- !u!4 &357457438
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 357457436}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.38429528, y: 0, z: 0, w: 0.92321026}
+  m_LocalPosition: {x: 393.001, y: 6.741, z: 543.049}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 45.2, y: 0, z: 0}
 --- !u!1001 &360721524
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7515,6 +7567,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 272595872}
     m_Modifications:
+    - target: {fileID: -1469839187566981841, guid: 3507044859ce2cc48b9680e03cd62a47, type: 3}
+      propertyPath: m_Convex
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1909275912492490596, guid: 3507044859ce2cc48b9680e03cd62a47, type: 3}
       propertyPath: m_Name
       value: FCP_CampStool_Type1_Color1 (5)
@@ -13089,27 +13145,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7878dd613adeed04c82667f222dd10a0, type: 3}
   m_PrefabInstance: {fileID: 1614476352}
   m_PrefabAsset: {fileID: 0}
---- !u!65 &704732034
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 704732031}
-  m_Material: {fileID: 13400000, guid: a5f6016dd69f60e49b7414ff9467d5b0, type: 2}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.48773956, y: 1.7981253, z: 0.29429126}
-  m_Center: {x: -0.021459758, y: 0.8943939, z: 0.0036092997}
 --- !u!54 &704732035
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -13371,6 +13406,29 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!136 &704732040
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 704732031}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.20680146
+  m_Height: 1.7546954
+  m_Direction: 1
+  m_Center: {x: -0.010375976, y: 0.86824167, z: 0.021676455}
 --- !u!1001 &708644515
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14848,6 +14906,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 272595872}
     m_Modifications:
+    - target: {fileID: -1469839187566981841, guid: 3507044859ce2cc48b9680e03cd62a47, type: 3}
+      propertyPath: m_Convex
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1909275912492490596, guid: 3507044859ce2cc48b9680e03cd62a47, type: 3}
       propertyPath: m_Name
       value: FCP_CampStool_Type1_Color1 (4)
@@ -18652,7 +18714,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1238725048}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1338461}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: ScreenVision
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1238725048
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22814,7 +22888,7 @@ PrefabInstance:
       addedObject: {fileID: 704732035}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7878dd613adeed04c82667f222dd10a0, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 704732034}
+      addedObject: {fileID: 704732040}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7878dd613adeed04c82667f222dd10a0, type: 3}
       insertIndex: -1
       addedObject: {fileID: 704732036}
@@ -31373,3 +31447,4 @@ SceneRoots:
   - {fileID: 411445577}
   - {fileID: 1249327872}
   - {fileID: 2114595970}
+  - {fileID: 357457438}

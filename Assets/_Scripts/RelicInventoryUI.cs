@@ -65,22 +65,6 @@ public class RelicInventoryUI : MonoBehaviour
         int total = (hasSol ? 1 : 0) + (hasLuna ? 1 : 0) + (hasMezcla ? 1 : 0);
         Debug.Log($"[RelicInventoryUI] Reliquia registrada: {type}. Progreso: {total}/3.");
 
-        if (HasAllRelics)
-        {
-            if (exitDoor != null)
-            {
-                exitDoor.OpenDoor();
-            }
-            else
-            {
-                DoorSlideController foundDoor = Object.FindObjectOfType<DoorSlideController>();
-                if (foundDoor != null)
-                {
-                    foundDoor.OpenDoor();
-                }
-            }
-            Debug.Log("[RelicInventoryUI] ¡Todas las reliquias reunidas! Abriendo la puerta de salida en Caver (1).");
-        }
     }
 
     public void UpdateUI()
