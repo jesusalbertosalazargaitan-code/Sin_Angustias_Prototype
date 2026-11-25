@@ -21,6 +21,9 @@ public class PlayerController : MonoBehaviour
     public AudioClip flashlightClip;
 
     private Vector2 inputMove; //Variable para almacenar el input de movimiento del jugador, que se actualizará en función de las entradas del jugador (como WASD o el joystick) y se utilizará para calcular la dirección y la velocidad del movimiento del jugador en el método Move
+    private PlayerStamina stamina;
+    private bool sprintInputHeld = false;
+    public bool IsSprinting => speed > 4.5f && inputMove.sqrMagnitude > 0.01f && !GameOver;
     Rigidbody rb; // Variable para almacenar una referencia al componente Rigidbody del jugador, lo que nos permitirá controlar el movimiento del jugador aplicando fuerzas o estableciendo la velocidad del Rigidbody en el método Move
     Animator anim;// Variable para almacenar una referencia al componente Animator del jugador, lo que nos permitirá controlar las animaciones del jugador estableciendo parámetros en el Animator en el método Animations y otras partes del código para activar animaciones específicas como caminar, correr, atacar o morir
     void Awake()
@@ -28,6 +31,7 @@ public class PlayerController : MonoBehaviour
         // En el método Awake, obtenemos referencias a los componentes Animator y Rigidbody del jugador, así como al GameManager en la escena, lo que nos permitirá controlar las animaciones, el movimiento y la lógica del juego en función de la puntuación y el estado del juego
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
+        stamina = GetComponent<PlayerStamina>();
         gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
     }
     void Update()
@@ -44,13 +48,13 @@ public class PlayerController : MonoBehaviour
         inputMove = value.Get<Vector2>(); 
     }
     // Método que se llama cuando se recibe una entrada de sprint, actualizando la velocidad del jugador en función de si el botón de sprint está presionado o no
-    public void OnSprint(InputValue value) 
+    public void OnSprint(InputValue value)
     {
-        // Si el botón de sprint está presionado y el juego no ha terminado, aumentamos la velocidad del jugador a 7f para permitir que corra
-        if (value.isPressed && GameOver == false) 
-            speed = 7f; // Aumentamos la velocidad del jugador a 7f para permitir que corra
-        // Si el botón de sprint no está presionado, restablecemos la velocidad del jugador a 3.5f para que camine a una velocidad normal
-        else speed = 3.5f;  
+        sprintInputHeld = value.isPressed;
+        if (!sprintInputHeld || GameOver)
+        {
+            speed = 3.5f;
+        }
     }
     public void OnFlashlight()
     {
@@ -65,6 +69,15 @@ public class PlayerController : MonoBehaviour
         // Si el juego no ha terminado, calculamos la dirección deseada en función del input de movimiento y establecemos la velocidad del Rigidbody para mover al jugador en consecuencia, manteniendo la componente vertical de la velocidad para permitir el salto o la gravedad
         if (GameOver == false)
         {
+            bool isMoving = inputMove.sqrMagnitude > 0.01f;
+            bool wantsToSprint = sprintInputHeld && isMoving && !GameOver;
+            if (stamina != null)
+            {
+                stamina.SetSprintIntent(wantsToSprint);
+            }
+            bool canActuallySprint = wantsToSprint && (stamina == null || stamina.CanSprint);
+            speed = canActuallySprint ? 7f : 3.5f;
+
             // Calculamos la dirección deseada en función del input de movimiento, utilizando el eje forward para el movimiento hacia adelante/atrás y el eje right para el movimiento lateral
             Vector3 direccionDeseada = (transform.forward * inputMove.y) + (transform.right * inputMove.x);
             // Si la magnitud de la dirección deseada es mayor que 1, normalizamos el vector para evitar que el jugador se mueva más rápido en diagonal
@@ -75,12 +88,11 @@ public class PlayerController : MonoBehaviour
             }
             // Establecemos la velocidad del Rigidbody en función de la dirección deseada multiplicada por la velocidad actual, manteniendo la componente vertical de la velocidad para permitir el salto o la gravedad
             rb.velocity = new Vector3(direccionDeseada.x * speed, rb.velocity.y, direccionDeseada.z * speed);
-            bool isMoving = inputMove.sqrMagnitude > 0.01f;
             if (footstepSource != null)
             {
                 if (isMoving && Time.timeScale > 0f)
                 {
-                    footstepSource.pitch = (speed > 5f) ? 1.35f : 1.0f;
+                    footstepSource.pitch = IsSprinting ? 1.35f : 1.0f;
                     if (!footstepSource.isPlaying)
                     {
                         footstepSource.Play();
@@ -94,6 +106,10 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            if (stamina != null)
+            {
+                stamina.SetSprintIntent(false);
+            }
             if (footstepSource != null && footstepSource.isPlaying)
             {
                 footstepSource.Pause();

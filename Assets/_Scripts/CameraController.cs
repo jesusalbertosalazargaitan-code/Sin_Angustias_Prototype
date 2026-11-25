@@ -13,6 +13,7 @@ public class CameraController : MonoBehaviour
     public float sensibylity = 15f;
     public Transform flashlightTransform;
     public Transform armBone;
+    public GameObject stamina;
 
     [Header("Cinemachine First-Person")]
     public CinemachineVirtualCamera virtualCamera;
@@ -121,7 +122,7 @@ public class CameraController : MonoBehaviour
         // FOV Dinámico en la Virtual Camera
         if (virtualCamera != null && playerController != null && activeCam == true)
         {
-            bool isSprinting = playerController.speed > 4.5f;
+            bool isSprinting = playerController.IsSprinting;
             float targetFOV = isSprinting ? sprintFOV : baseFOV;
             virtualCamera.m_Lens.FieldOfView = Mathf.Lerp(virtualCamera.m_Lens.FieldOfView, targetFOV, Time.deltaTime * fovSmoothSpeed);
         }
@@ -173,6 +174,7 @@ public class CameraController : MonoBehaviour
     IEnumerator WaitsecondsCam()
     {
         yield return new WaitForSeconds(4f);
+        stamina.SetActive(true);
         activeCam = true;
     }
 }
