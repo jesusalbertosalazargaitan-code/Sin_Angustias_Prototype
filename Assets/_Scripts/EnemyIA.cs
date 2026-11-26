@@ -22,16 +22,26 @@ public class EnemyIA : MonoBehaviour
     private bool jugadorEnVista; // Si el jugador está dentro del radio de visión
     private bool persiguiendoJugador = false;
     public bool walkUp = false; // Si el enemigo está caminando erguido (después de recoger 3 objetos)
+    [Header("Sincronización de Muerte")]
+    public float killSyncDistance = 0.95f;
+    public float deathSequenceDuration = 7.0f;
     bool GameOver = false; // Si el juego ha terminado (para evitar que la IA siga actuando después de ganar o perder)
+    private bool isKilling = false;
     private bool transformado = false; // Bandera para que la transformación de score 3 solo se ejecute una única vez
     void Start()
     {
         // Obtener referencias a componentes y objetos necesarios
-        playerController = GameObject.Find("Player").GetComponent<PlayerController>();
+        GameObject playerGO = GameObject.FindWithTag("Player");
+        if (playerGO == null) playerGO = GameObject.Find("Player");
+        if (playerGO != null)
+        {
+            playerController = playerGO.GetComponent<PlayerController>();
+            jugador = playerGO.transform;
+        }
         anim = GetComponent<Animator>();
-        gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
+        GameObject gmGO = GameObject.Find("Game Manager");
+        if (gmGO != null) gameManager = gmGO.GetComponent<GameManager>();
         agente = GetComponent<NavMeshAgent>();
-        jugador = GameObject.Find("Player").transform;
         // Empezamos deambulando a un punto aleatorio
         SetNuevoPuntoAleatorio();
         // Iniciar la corrutina para cambiar a caminar erguido después de 30 segundos
@@ -40,6 +50,8 @@ public class EnemyIA : MonoBehaviour
 
     void Update()
     {
+        if (GameOver || isKilling || jugador == null) return;
+
         // Detección: ¿El jugador está cerca?
         float distanciaAlJugador = Vector3.Distance(transform.position, jugador.position);
         // El jugador está en vista si está dentro del radio de visión y el juego no ha terminado
@@ -52,7 +64,8 @@ public class EnemyIA : MonoBehaviour
             jugadorEnVista = false; // El jugador está fuera del radio de visión o el juego ha terminado
         }
         // Comportamiento: Si el jugador está en vista y no está en la zona segura, perseguirlo. Si no, deambular.
-        if (jugadorEnVista && PuedoVerAlJugador() && !playerController.safeZone && GameOver == false)
+        bool isSafeZone = playerController != null && playerController.safeZone;
+        if (jugadorEnVista && PuedoVerAlJugador() && !isSafeZone && GameOver == false)
         {
             if (!persiguiendoJugador)
             {
@@ -83,14 +96,14 @@ public class EnemyIA : MonoBehaviour
             StartCoroutine(StateStop()); // Inicia la corrutina para volver a caminar normal después de 7.5 segundos
         }
         // Si el jugador ha recogido 3 objetos, el enemigo se vuelve aún más rápido y agresivo
-        if (gameManager.objectScore == 3)
+        if (gameManager != null && gameManager.objectScore == 3)
         {
             run = 6f; // Velocidad máxima al perseguir después de recoger 6 objetos
             walk = 5f; // Velocidad máxima al deambular después de recoger 6 objetos
             roadRate = 30f; // Radio de deambulación máximo después de recoger 6 objetos
             visionRate = 40f; // Radio de visión máximo después de recoger 6 objetos
         }
-        if (walkUp == true)
+        if (walkUp == true && agente != null && agente.enabled && agente.isOnNavMesh)
         {
             agente.isStopped = true;
             agente.ResetPath();
@@ -100,7 +113,7 @@ public class EnemyIA : MonoBehaviour
     void PerseguirJugador() 
     {
         // Si el jugador está en vista y el juego no ha terminado, perseguirlo
-        if (walkUp == false && GameOver == false)
+        if (walkUp == false && GameOver == false && agente != null && agente.enabled)
         {
             // El NavMesh Agent se encarga de ir hacia el jugador sin chocarse
             agente.SetDestination(jugador.position);
@@ -111,6 +124,7 @@ public class EnemyIA : MonoBehaviour
     // Si el jugador no está en vista o está en la zona segura, deambular
     void DeambularAletorio() 
     {
+        if (agente == null || !agente.enabled) return;
         agente.speed = walk; // Volver a velocidad normal
         anim.SetFloat("Runing", 0); // Desactiva la animación de correr estableciendo el parámetro "Runing" en el Animator a 0
 
@@ -133,6 +147,7 @@ public class EnemyIA : MonoBehaviour
     // Función auxiliar para calcular un punto aleatorio en el NavMesh
     void SetNuevoPuntoAleatorio()
     {
+        if (agente == null || !agente.enabled || !agente.isOnNavMesh) return;
         // Creamos un círculo imaginario alrededor de la IA
         Vector3 puntoAleatorio = Random.insideUnitSphere * roadRate;
         // Lo movemos a la posición de la IA para que el círculo esté centrado en ella
@@ -195,10 +210,13 @@ public class EnemyIA : MonoBehaviour
     IEnumerator StateAnim() // Cambia a caminar erguido después de 30 segundos
     {
         yield return new WaitForSeconds(30f); // Espera 30 segundos antes de cambiar a caminar erguido
-        anim.SetBool("Up", true); // Activa la animación de caminar erguido
-        anim.SetBool("Walk", true); // Activa la animación de caminar
-        walkUp = true; // El enemigo empieza a caminar erguido después de 30 segundos
-        StartCoroutine(StateStop()); // Inicia la corrutina para volver a caminar normal después de 7.5 segundos
+        if (!GameOver && !isKilling && anim != null)
+        {
+            anim.SetBool("Up", true); // Activa la animación de caminar erguido
+            anim.SetBool("Walk", true); // Activa la animación de caminar
+            walkUp = true; // El enemigo empieza a caminar erguido después de 30 segundos
+            StartCoroutine(StateStop()); // Inicia la corrutina para volver a caminar normal después de 7.5 segundos
+        }
     }
     // Vuelve a caminar normal después de 7.5 segundos
     IEnumerator StateStop() 
@@ -206,23 +224,56 @@ public class EnemyIA : MonoBehaviour
         yield return new WaitForSeconds(7.5f); // Espera 7.5 segundos antes de volver a caminar normal
         walkUp = false; // El enemigo deja de caminar erguido después de 7.5 segundos
     }
+
+    public void TriggerKillOnPlayer(PlayerController targetPlayer)
+    {
+        if (isKilling || GameOver) return;
+        isKilling = true;
+        GameOver = true;
+
+        if (agente != null && agente.enabled)
+        {
+            if (agente.isOnNavMesh)
+            {
+                agente.isStopped = true;
+                agente.ResetPath();
+                agente.velocity = Vector3.zero;
+            }
+            agente.updatePosition = false;
+            agente.updateRotation = false;
+            agente.enabled = false;
+        }
+
+        PlayerController victim = targetPlayer != null ? targetPlayer : playerController;
+        if (victim != null)
+        {
+            victim.TriggerSyncedDeath(transform, anim, killSyncDistance);
+        }
+        else if (anim != null)
+        {
+            anim.speed = 1f;
+            anim.SetBool("Dead", true);
+            anim.Play("DeadPlayerforEnemy", 0, 0f);
+            anim.Update(0f);
+        }
+
+        StartCoroutine(DeadTime());
+    }
+
     // Detecta colisiones con el jugador para activar la animación de muerte y la secuencia de Game Over
     public void OnCollisionEnter(Collision collision) 
     {
-        // Si colisiona con el jugador y el juego no ha terminado, se activa la animación de muerte y se inicia la secuencia de Game Over
-        if (collision.gameObject.CompareTag("Player") && GameOver == false) 
+        // Si colisiona con el jugador y el juego no ha terminado, sincroniza la animación de muerte
+        if (collision.gameObject.CompareTag("Player") && GameOver == false && !isKilling) 
         {
-            anim.SetBool("Dead", true); // Activa la animación de muerte estableciendo el parámetro "Dead" en el Animator a true
-            playerController.GameOver = true;
-            GameOver = true; // El juego ha terminado, así que establecemos GameOver a true para evitar que la IA siga actuando
-            StartCoroutine(DeadTime()); // Inicia la corrutina para esperar 10 segundos antes de cargar la escena de Game Over
+            PlayerController pc = collision.gameObject.GetComponentInParent<PlayerController>();
+            TriggerKillOnPlayer(pc);
         }
     }
-    // Espera 10 segundos después de la muerte para cargar la escena de Game Over
+    // Espera tras la secuencia sincronizada de muerte para cargar la escena de Game Over
     IEnumerator DeadTime() 
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(deathSequenceDuration);
         SceneManager.LoadScene(1); // Carga la escena de Game Over (asegúrate de que la escena de Game Over esté en el índice 1 en la configuración de escenas)
     }
 }
-

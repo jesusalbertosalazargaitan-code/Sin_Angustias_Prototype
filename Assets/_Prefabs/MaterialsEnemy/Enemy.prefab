@@ -9,6 +9,18 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 7878dd613adeed04c82667f222dd10a0, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.970393
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7878dd613adeed04c82667f222dd10a0, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.970393
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7878dd613adeed04c82667f222dd10a0, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.970393
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7878dd613adeed04c82667f222dd10a0, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.109
       objectReference: {fileID: 0}
@@ -158,10 +170,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebfe7a3033684df43958dfe6f0af4a44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radioDeVision: 10
-  radioDeambulacion: 15
+  visionRate: 10
+  roadRate: 15
   tiempoDeEspera: 3
   run: 3
   walk: 1.5
   jugador: {fileID: 0}
   walkUp: 0
+  killSyncDistance: 0.7
+  deathSequenceDuration: 7

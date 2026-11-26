@@ -25,6 +25,8 @@ public class CameraController : MonoBehaviour
     private CinemachinePOV pov;
     private CinemachineInputProvider inputProvider;
     private Transform cameraRoot;
+    private Quaternion armPreLateLocalRot;
+    private bool hasArmPreLateRot = false;
     public bool activeCam = false;
 
     void Start()
@@ -50,6 +52,11 @@ public class CameraController : MonoBehaviour
             cameraRoot = player.Find("CameraRoot");
             if (armBone == null)
                 armBone = FindChildRecursive(player, "RightArm");
+            if (armBone != null)
+            {
+                armPreLateLocalRot = armBone.localRotation;
+                hasArmPreLateRot = true;
+            }
             if (flashlightTransform == null)
             {
                 Light spot = player.GetComponentInChildren<Light>(true);
@@ -97,6 +104,12 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
+        if (armBone != null && hasArmPreLateRot)
+        {
+            armBone.localRotation = armPreLateLocalRot;
+            hasArmPreLateRot = false;
+        }
+
         bool isDead = playerController != null && playerController.GameOver;
         bool isPaused = Time.timeScale == 0f;
 
@@ -130,7 +143,7 @@ public class CameraController : MonoBehaviour
 
     void LateUpdate()
     {
-        if (playerController != null && playerController.GameOver && activeCam == true) return;
+        if (playerController != null && playerController.GameOver) return;
 
         float yaw = (pov != null) ? pov.m_HorizontalAxis.Value : transform.eulerAngles.y;
         float pitch = (pov != null) ? pov.m_VerticalAxis.Value : transform.localEulerAngles.x;
@@ -149,10 +162,13 @@ public class CameraController : MonoBehaviour
         }
         transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
 
-        // 2. Inclina el brazo derecho suavemente en el plano vertical
+        // 2. Inclina el brazo derecho suavemente en el plano vertical sin acumular rotación entre frames
         if (armBone != null && player != null && activeCam == true)
         {
-            armBone.Rotate(player.right, pitch * 0.6f, Space.World);
+            armPreLateLocalRot = armBone.localRotation;
+            hasArmPreLateRot = true;
+            float clampedPitch = Mathf.Clamp(pitch, -60f, 65f);
+            armBone.Rotate(player.right, clampedPitch * 0.6f, Space.World);
         }
 
         // 3. Garantiza que la linterna apunte exactamente a donde mira la cámara
@@ -174,7 +190,7 @@ public class CameraController : MonoBehaviour
     IEnumerator WaitsecondsCam()
     {
         yield return new WaitForSeconds(4f);
-        stamina.SetActive(true);
+        if (stamina != null) stamina.SetActive(true);
         activeCam = true;
     }
 }
