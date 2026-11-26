@@ -270,10 +270,24 @@ public class EnemyIA : MonoBehaviour
             TriggerKillOnPlayer(pc);
         }
     }
-    // Espera tras la secuencia sincronizada de muerte para cargar la escena de Game Over
+    // Espera tras la secuencia sincronizada de muerte para mostrar el pop-up de Game Over
     IEnumerator DeadTime() 
     {
         yield return new WaitForSeconds(deathSequenceDuration);
-        SceneManager.LoadScene(1); // Carga la escena de Game Over (asegúrate de que la escena de Game Over esté en el índice 1 en la configuración de escenas)
+        GameOverUIController gameOverUI = GameOverUIController.Instance != null
+            ? GameOverUIController.Instance
+            : Object.FindObjectOfType<GameOverUIController>(true);
+
+        if (gameOverUI != null)
+        {
+            gameOverUI.ShowGameOver();
+        }
+        else
+        {
+            Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            SceneManager.LoadScene(0);
+        }
     }
 }
