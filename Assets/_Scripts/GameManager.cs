@@ -97,21 +97,45 @@ public class GameManager : MonoBehaviour
     }
     public void MenuPause() //Metodo menu de pausa
     {
-        if (Input.GetKeyDown(KeyCode.P) && !menuOff || Input.GetKeyDown(KeyCode.Escape) && !menuOff) //Condición tecla menu de apusa
+        if (menuOff || GameOverUIController.IsGameOverActive) return;
+
+        if (Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Escape)) //Condición tecla menu de pausa
         {
-            Cursor.lockState = CursorLockMode.None; // desbloqueamos el cursor
-            Cursor.visible = true; // hacemos visible el cursor
-            Time.timeScale = 0; // pausamos el tiempo del juego
-            pause.SetActive(true); // activamos el menú de pausa
+            if (pause != null && !pause.activeSelf && (options == null || !options.activeSelf))
+            {
+                Cursor.lockState = CursorLockMode.None; // desbloqueamos el cursor
+                Cursor.visible = true; // hacemos visible el cursor
+                Time.timeScale = 0; // pausamos el tiempo del juego
+                pause.SetActive(true); // activamos el menú de pausa
+                return;
+            }
         }
         if (Input.GetKeyDown(KeyCode.Escape) && lvl1 == false)
         {
             Cursor.lockState = CursorLockMode.Locked; // bloqueamos el cursor
             Cursor.visible = false; // hacemos invisible el cursor
             Time.timeScale = 1; // reanudamos el tiempo del juego
-            pause.SetActive(false); // desactivamos el menú de pausa
-            options.SetActive(false);
+            if (pause != null) pause.SetActive(false); // desactivamos el menú de pausa
+            if (options != null) options.SetActive(false);
         }
+    }
+
+    public void RestartLevel()
+    {
+        Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        DynamicGI.UpdateEnvironment();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void ReturnToMainMenu()
+    {
+        Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        DynamicGI.UpdateEnvironment();
+        SceneManager.LoadScene(0);
     }
     public void Continue() // Metodo para continuar el juego
     {

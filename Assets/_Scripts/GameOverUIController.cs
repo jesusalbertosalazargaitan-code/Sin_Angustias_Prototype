@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 public class GameOverUIController : MonoBehaviour
 {
     public static GameOverUIController Instance { get; private set; }
+    public static bool IsGameOverActive => Instance != null && Instance.isShown;
 
     [Header("Referencias UI")]
     public GameObject panelGameOver;
@@ -43,6 +44,8 @@ public class GameOverUIController : MonoBehaviour
         if (isShown) return;
         isShown = true;
 
+        InteraccionHistoria.CerrarTodosLosAvisosYPaneles(null);
+
         GameManager gm = Object.FindObjectOfType<GameManager>();
         if (gm != null)
         {
@@ -70,6 +73,12 @@ public class GameOverUIController : MonoBehaviour
 
     public void RestartLevel()
     {
+        GameManager gm = Object.FindObjectOfType<GameManager>();
+        if (gm != null)
+        {
+            gm.RestartLevel();
+            return;
+        }
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -79,6 +88,12 @@ public class GameOverUIController : MonoBehaviour
 
     public void ReturnToMainMenu()
     {
+        GameManager gm = Object.FindObjectOfType<GameManager>();
+        if (gm != null)
+        {
+            gm.ReturnToMainMenu();
+            return;
+        }
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
